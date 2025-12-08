@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serene Space — Admin Login</title>
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      margin: 0;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #f8fafc;
+    }
+    .card {
+      background: #1e293b;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      width: 380px;
+      border: 1px solid #334155;
+    }
+    h1 {
+      margin: 0 0 20px;
+      font-size: 24px;
+      color: #60a5fa;
+      text-align: center;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #334155;
+      color: #f1f5f9;
+      box-sizing: border-box;
+    }
+    input:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    }
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .msg {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .error {
+      background: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #dc2626;
+    }
+    .success {
+      background: #065f46;
+      color: #a7f3d0;
+      border: 1px solid #10b981;
+    }
+    .user-login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .user-login-link a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    .user-login-link a:hover {
+      text-decoration: underline;
+    }
+    .admin-badge {
+      display: inline-block;
+      background: #1e40af;
+      color: #dbeafe;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Admin Portal <span class="admin-badge">ADMIN</span></h1>
+    <div class="subtitle">Serene Space Administration Dashboard</div>
+
+    <form method="POST" action="/admin/login/" enctype="application/x-www-form-urlencoded" onsubmit="console.log('Form submitting...'); return true;">
+    
+    {% if error %}
+    <div class="msg error">{{ error }}</div>
+    {% endif %}
+    
+    <label for="email">Admin Email</label>
+    <input id="email" name="email" type="email" placeholder="admin@serenespace.com" required />
+    
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" placeholder="••••••••" required />
+    
+    <button type="submit">Login as Administrator</button>
+</form>
+
+    <!-- <div class="user-login-link">
+      Are you a user? <a href="/login.html">User Login</a>
+    </div> -->
+  </div>
+
+</body>
+</html>
