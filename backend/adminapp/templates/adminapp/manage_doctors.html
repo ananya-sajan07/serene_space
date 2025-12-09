@@ -507,16 +507,31 @@
         try {
           showMessage(`Approving doctor ${doctorId}...`, 'success');
           
-          const response = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          // First get current doctor data
+          const getResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+            credentials: 'include'
+          });
+          
+          if (!getResponse.ok) {
+            throw new Error('Failed to fetch doctor data');
+          }
+          
+          const doctor = await getResponse.json();
+          
+          // Update only the status field
+          doctor.status = 'approved';
+          
+          // Send updated doctor data
+          const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ status: 'approved' })
+            body: JSON.stringify(doctor)
           });
           
-          if (response.ok) {
+          if (putResponse.ok) {
             showMessage(`Doctor ${doctorId} approved successfully!`, 'success');
             // Reload the doctors list
             setTimeout(() => {
@@ -537,16 +552,31 @@
         try {
           showMessage(`Rejecting doctor ${doctorId}...`, 'success');
           
-          const response = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          // First get current doctor data
+          const getResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+            credentials: 'include'
+          });
+          
+          if (!getResponse.ok) {
+            throw new Error('Failed to fetch doctor data');
+          }
+          
+          const doctor = await getResponse.json();
+          
+          // Update only the status field
+          doctor.status = 'rejected';  // Change this line from 'approved' to 'rejected'
+          
+          // Send updated doctor data
+          const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({ status: 'rejected' })
+            body: JSON.stringify(doctor)
           });
           
-          if (response.ok) {
+          if (putResponse.ok) {
             showMessage(`Doctor ${doctorId} rejected successfully!`, 'success');
             // Reload the doctors list
             setTimeout(() => {
@@ -561,7 +591,7 @@
         }
       }
     }
-
+    
     async function deleteDoctor(doctorId) {
       if (confirm(`Are you sure you want to delete doctor ID: ${doctorId}?`)) {
         try {

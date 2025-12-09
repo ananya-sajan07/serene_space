@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login - Serene Space</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #059669;
+            color: white;
+        }
+        
+        .btn:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .register-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .user-info {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-info h3 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .user-info p {
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+        
+        .profile-btn {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .profile-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+        
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>User Login</h1>
+            <p>Sign in to your Serene Space account</p>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message"></div>
+            
+            <!-- User Info (shown after login) -->
+            <div id="userInfo" class="user-info">
+                <h3 id="userName"></h3>
+                <p id="userEmail"></p>
+                <a href="#" id="profileLink" class="profile-btn">Go to Profile</a>
+                <a href="#" onclick="logout()" class="logout-btn">Logout</a>
+            </div>
+            
+            <!-- Login Form (shown before login) -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="user@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn">Sign In</button>
+                
+                <div class="register-link">
+                    Don't have an account? <a href="http://127.0.0.1:8001/admin/user_registration_page/">Register here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const userInfo = document.getElementById('userInfo');
+        const messageDiv = document.getElementById('message');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
+        const profileLink = document.getElementById('profileLink');
+        
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const userId = localStorage.getItem('user_id');
+            const userData = localStorage.getItem('user_data');
+            
+            if (userId && userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    showUserInfo(user);
+                } catch (e) {
+                    localStorage.clear();
+                }
+            }
+        });
+        
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showMessage('Please fill all fields', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Logging in...', 'success');
+                
+                const response = await fetch('http://127.0.0.1:8001/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Save user data to localStorage
+                    localStorage.setItem('user_id', data.user_id);
+                    localStorage.setItem('user_data', JSON.stringify(data));
+                    
+                    showMessage('Login successful!', 'success');
+                    showUserInfo(data);
+                    
+                } else {
+                    showMessage(data.error || 'Invalid credentials', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        });
+        
+        function showUserInfo(user) {
+            userName.textContent = `Welcome, ${user.name}`;
+            userEmail.textContent = user.email;
+            profileLink.href = `http://127.0.0.1:8001/admin/user_edit_page/?user_id=${user.user_id}`;
+            
+            userInfo.style.display = 'block';
+            loginForm.style.display = 'none';
+            
+            // Clear message after 2 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 2000);
+        }
+        
+        function logout() {
+            localStorage.clear();
+            userInfo.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginForm.reset();
+            showMessage('Logged out successfully', 'success');
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 2000);
+        }
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+        
+        // Optional: Fill sample data for testing
+        function fillSampleData() {
+            document.getElementById('email').value = 'testuser@example.com';
+            document.getElementById('password').value = 'password123';
+        }
+        
+        // Uncomment for testing
+        // document.addEventListener('DOMContentLoaded', fillSampleData);
+    </script>
+</body>
+</html>

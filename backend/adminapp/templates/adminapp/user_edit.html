@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Serene Space</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #60a5fa;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-logout {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-back {
+            background: #475569;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #334155;
+            transform: translateY(-2px);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: 500px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .profile-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+        }
+        
+        .profile-sidebar {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .profile-info {
+            text-align: center;
+        }
+        
+        .profile-name {
+            font-size: 22px;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: #64748b;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        .profile-form-section {
+            padding: 10px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+        
+        .btn-save {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+        
+        .btn-save:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        
+        @media (max-width: 900px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>My Profile</h1>
+            <div class="header-actions">
+                <a href="http://127.0.0.1:8001/admin/user_edit_page/" class="btn btn-back">Back to Login</a>
+                <button onclick="logout()" class="btn btn-logout">Logout</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="message" class="message info">
+                Loading your profile...
+            </div>
+            
+            <div id="profileContent" style="display: none;">
+                <div class="profile-section">
+                    <!-- Left Sidebar -->
+                    <div class="profile-sidebar">
+                        <div class="profile-avatar" id="avatarInitials">
+                            <!-- Initials will be filled by JS -->
+                        </div>
+                        <div class="profile-info">
+                            <h2 class="profile-name" id="displayName">Loading...</h2>
+                            <p class="profile-email" id="displayEmail">Loading...</p>
+                        </div>
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="moodLogsCount">0</div>
+                                <div class="stat-label">Mood Logs</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="accountAge">0</div>
+                                <div class="stat-label">Days with us</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Form -->
+                    <div class="profile-form-section">
+                        <h2 class="section-title">Edit Profile Information</h2>
+                        
+                        <form id="profileForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="required" for="name">Full Name</label>
+                                    <input type="text" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="required" for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password (to confirm changes)</label>
+                                    <input type="password" id="currentPassword" name="currentPassword">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="newPassword">New Password (leave empty to keep current)</label>
+                                    <input type="password" id="newPassword" name="newPassword">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-cancel" onclick="resetForm()">Reset</button>
+                                <button type="submit" class="btn btn-save" id="saveButton">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get user_id from URL or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlUserId = urlParams.get('user_id');
+            const localUserId = localStorage.getItem('user_id');
+            const userData = localStorage.getItem('user_data');
+            
+            const userId = urlUserId || localUserId;
+            
+            if (!userId) {
+                showMessage('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:8001/admin/user_login_page/';
+                }, 2000);
+                return;
+            }
+            
+            try {
+                // Try to load user data
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                    displayUserProfile(currentUser);
+                }
+                
+                // Fetch fresh user data from API
+                const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`);
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    displayUserProfile(currentUser);
+                    
+                    // Update localStorage with fresh data
+                    localStorage.setItem('user_data', JSON.stringify({
+                        user_id: currentUser.id,
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        is_admin: currentUser.is_admin
+                    }));
+                    
+                } else {
+                    throw new Error('Failed to load user profile');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error loading profile. Please login again.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:8001/admin/user_login_page/';
+                }, 2000);
+            }
+        });
+        
+        function displayUserProfile(user) {
+            // Update sidebar
+            const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('avatarInitials').textContent = initials;
+            document.getElementById('displayName').textContent = user.name;
+            document.getElementById('displayEmail').textContent = user.email;
+            
+            // Update form
+            document.getElementById('name').value = user.name;
+            document.getElementById('email').value = user.email;
+            
+            // Calculate account age
+            const createdDate = new Date(user.created_at);
+            const today = new Date();
+            const diffTime = Math.abs(today - createdDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('accountAge').textContent = diffDays;
+            
+            // Show content
+            document.getElementById('profileContent').style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+        }
+        
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                showMessage('User not found', 'error');
+                return;
+            }
+            
+            const saveButton = document.getElementById('saveButton');
+            saveButton.disabled = true;
+            saveButton.textContent = 'Saving...';
+            
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Basic validation
+            if (!name || !email) {
+                showMessage('Name and email are required', 'error');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('Please enter a valid email address', 'error');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+                return;
+            }
+            
+            // Password validation if changing password
+            if (newPassword) {
+                if (newPassword !== confirmPassword) {
+                    showMessage('New passwords do not match', 'error');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Changes';
+                    return;
+                }
+                
+                if (!currentPassword) {
+                    showMessage('Please enter current password to change password', 'error');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Changes';
+                    return;
+                }
+            }
+            
+            try {
+                // Prepare update data
+                const updateData = {
+                    name: name,
+                    email: email
+                };
+                
+                // If changing password, we need to verify current password first
+                if (newPassword) {
+                    // First verify current password by trying to login
+                    const verifyResponse = await fetch('http://127.0.0.1:8001/api/login/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: currentUser.email,
+                            password: currentPassword
+                        })
+                    });
+                    
+                    if (!verifyResponse.ok) {
+                        showMessage('Current password is incorrect', 'error');
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Save Changes';
+                        return;
+                    }
+                    
+                    // Add new password to update data
+                    updateData.password = newPassword;
+                }
+                
+                // Send update request
+                const response = await fetch(`http://127.0.0.1:8001/api/users/${currentUser.id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    
+                    // Update local data
+                    currentUser = updatedUser;
+                    localStorage.setItem('user_data', JSON.stringify({
+                        user_id: updatedUser.id,
+                        name: updatedUser.name,
+                        email: updatedUser.email,
+                        is_admin: updatedUser.is_admin
+                    }));
+                    
+                    // Update display
+                    displayUserProfile(updatedUser);
+                    
+                    // Clear password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    
+                    showMessage('Profile updated successfully!', 'success');
+                    
+                } else {
+                    const errorData = await response.json();
+                    const errorMessage = errorData.email ? 'Email already exists' : 
+                                        errorData.detail || 'Failed to update profile';
+                    showMessage(errorMessage, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+            }
+        });
+        
+        function resetForm() {
+            if (currentUser) {
+                document.getElementById('name').value = currentUser.name;
+                document.getElementById('email').value = currentUser.email;
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                showMessage('Form reset to current values', 'info');
+            }
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'http://127.0.0.1:8001/admin/user_login_page/';
+        }
+        
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

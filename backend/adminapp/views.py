@@ -68,3 +68,22 @@ def doctor_registration_page(request):
     return render(request, 'adminapp/doctor_register.html')
 
 
+def user_registration_page(request):
+    #Simple Page for Users to Register (not Admin Protected)
+    return render(request, 'adminapp/user_register.html')
+
+def user_login_page(request):
+    #Simple Page for Users to Login (not Admin Protected)
+    return render(request, 'adminapp/user_login.html')
+
+def user_edit_page(request):
+    #Simple Page for Users to Edit their Details (not Admin Protected)
+    return render(request, 'adminapp/user_edit.html')
+
+def doctor_login_page(request):
+    #Simple Page for Doctors to Login (not Admin Protected)
+    return render(request, 'adminapp/doctor_login.html')
+
+def doctor_edit_page(request):
+    #Simple Page for Doctors to Edit their Details (not Admin Protected)
+    return render(request, 'adminapp/doctor_edit.html')

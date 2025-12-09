@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Profile - Serene Space</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #60a5fa;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-logout {
+            background: #dc2626;
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-back {
+            background: #475569;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #334155;
+            transform: translateY(-2px);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            min-height: 500px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .profile-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+        }
+        
+        .profile-sidebar {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .profile-info {
+            text-align: center;
+        }
+        
+        .profile-name {
+            font-size: 22px;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            color: #64748b;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .pending-badge {
+            background: #f59e0b;
+            color: #78350f;
+        }
+        
+        .approved-badge {
+            background: #10b981;
+            color: #064e3b;
+        }
+        
+        .rejected-badge {
+            background: #dc2626;
+            color: #fecaca;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+        }
+        
+        .profile-form-section {
+            padding: 10px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #1e293b;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+        
+        .btn-save {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn-save:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+        
+        .btn-save:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        
+        @media (max-width: 900px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Doctor Profile</h1>
+            <div class="header-actions">
+                <a href="http://127.0.0.1:8001/admin/doctor_login_page/" class="btn btn-back">Back to Login</a>
+                <button onclick="logout()" class="btn btn-logout">Logout</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="message" class="message info">
+                Loading your profile...
+            </div>
+            
+            <div id="profileContent" style="display: none;">
+                <div class="profile-section">
+                    <!-- Left Sidebar -->
+                    <div class="profile-sidebar">
+                        <div class="profile-avatar" id="avatarInitials">
+                            <!-- Initials will be filled by JS -->
+                        </div>
+                        <div class="profile-info">
+                            <h2 class="profile-name" id="displayName">Loading...</h2>
+                            <div id="displayStatus" class="status-badge">Loading...</div>
+                            <p class="profile-email" id="displayEmail">Loading...</p>
+                            <p id="displaySpecialization">Loading...</p>
+                        </div>
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" id="experienceYears">0</div>
+                                <div class="stat-label">Years Experience</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" id="accountAge">0</div>
+                                <div class="stat-label">Days Registered</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Form -->
+                    <div class="profile-form-section">
+                        <h2 class="section-title">Edit Profile Information</h2>
+                        
+                        <form id="profileForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="required" for="name">Full Name</label>
+                                    <input type="text" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="required" for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="qualification">Qualification</label>
+                                    <input type="text" id="qualification" name="qualification">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="specialization">Specialization</label>
+                                    <input type="text" id="specialization" name="specialization">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="experience">Years of Experience</label>
+                                    <input type="number" id="experience" name="experience" min="0">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="age">Age</label>
+                                    <input type="number" id="age" name="age" min="25" max="80">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="gender">Gender</label>
+                                    <select id="gender" name="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="place">City/Place</label>
+                                    <input type="text" id="place" name="place">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="hospital_name">Hospital/Clinic Name</label>
+                                    <input type="text" id="hospital_name" name="hospital_name">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="hospital_address">Hospital Address</label>
+                                    <textarea id="hospital_address" name="hospital_address"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="hospital_phone">Hospital Phone</label>
+                                    <input type="tel" id="hospital_phone" name="hospital_phone">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password (to confirm changes)</label>
+                                    <input type="password" id="currentPassword" name="currentPassword">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="newPassword">New Password (leave empty to keep current)</label>
+                                    <input type="password" id="newPassword" name="newPassword">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-cancel" onclick="resetForm()">Reset</button>
+                                <button type="submit" class="btn btn-save" id="saveButton">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDoctor = null;
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get doctor_id from URL or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlDoctorId = urlParams.get('doctor_id');
+            const localDoctorId = localStorage.getItem('doctor_id');
+            const doctorData = localStorage.getItem('doctor_data');
+            
+            const doctorId = urlDoctorId || localDoctorId;
+            
+            if (!doctorId) {
+                showMessage('Please login first', 'error');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:8001/admin/doctor_login_page/';
+                }, 2000);
+                return;
+            }
+            
+            try {
+                // Try to load doctor data from localStorage
+                if (doctorData) {
+                    currentDoctor = JSON.parse(doctorData);
+                    displayDoctorProfile(currentDoctor);
+                }
+                
+                // Fetch fresh doctor data from API
+                const response = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`);
+                
+                if (response.ok) {
+                    currentDoctor = await response.json();
+                    displayDoctorProfile(currentDoctor);
+                    
+                    // Update localStorage with fresh data
+                    localStorage.setItem('doctor_data', JSON.stringify(currentDoctor));
+                    
+                } else {
+                    throw new Error('Failed to load doctor profile');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error loading profile. Please login again.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:8001/admin/doctor_login_page/';
+                }, 2000);
+            }
+        });
+        
+        function displayDoctorProfile(doctor) {
+            // Update sidebar
+            const initials = doctor.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            document.getElementById('avatarInitials').textContent = initials;
+            document.getElementById('displayName').textContent = `Dr. ${doctor.name}`;
+            document.getElementById('displayEmail').textContent = doctor.email;
+            document.getElementById('displaySpecialization').textContent = doctor.specialization || 'Not specified';
+            
+            // Status badge
+            const statusElement = document.getElementById('displayStatus');
+            statusElement.textContent = doctor.status.charAt(0).toUpperCase() + doctor.status.slice(1);
+            statusElement.className = `status-badge ${doctor.status}-badge`;
+            
+            // Experience
+            document.getElementById('experienceYears').textContent = doctor.experience || '0';
+            
+            // Calculate account age
+            const createdDate = new Date(doctor.created_at);
+            const today = new Date();
+            const diffTime = Math.abs(today - createdDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('accountAge').textContent = diffDays;
+            
+            // Update form
+            document.getElementById('name').value = doctor.name;
+            document.getElementById('email').value = doctor.email;
+            document.getElementById('qualification').value = doctor.qualification || '';
+            document.getElementById('specialization').value = doctor.specialization || '';
+            document.getElementById('experience').value = doctor.experience || '';
+            document.getElementById('age').value = doctor.age || '';
+            document.getElementById('gender').value = doctor.gender || '';
+            document.getElementById('place').value = doctor.place || '';
+            document.getElementById('hospital_name').value = doctor.hospital_name || '';
+            document.getElementById('hospital_address').value = doctor.hospital_address || '';
+            document.getElementById('hospital_phone').value = doctor.hospital_phone || '';
+            
+            // Show content
+            document.getElementById('profileContent').style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+        }
+        
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentDoctor) {
+                showMessage('Doctor not found', 'error');
+                return;
+            }
+            
+            const saveButton = document.getElementById('saveButton');
+            saveButton.disabled = true;
+            saveButton.textContent = 'Saving...';
+            
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                qualification: document.getElementById('qualification').value.trim() || null,
+                specialization: document.getElementById('specialization').value.trim() || null,
+                experience: document.getElementById('experience').value ? parseInt(document.getElementById('experience').value) : null,
+                age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
+                gender: document.getElementById('gender').value || null,
+                place: document.getElementById('place').value.trim() || null,
+                hospital_name: document.getElementById('hospital_name').value.trim() || null,
+                hospital_address: document.getElementById('hospital_address').value.trim() || null,
+                hospital_phone: document.getElementById('hospital_phone').value.trim() || null
+            };
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Basic validation
+            if (!formData.name || !formData.email) {
+                showMessage('Name and email are required', 'error');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showMessage('Please enter a valid email address', 'error');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+                return;
+            }
+            
+            // Password validation if changing password
+            if (newPassword) {
+                if (newPassword !== confirmPassword) {
+                    showMessage('New passwords do not match', 'error');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Changes';
+                    return;
+                }
+                
+                if (!currentPassword) {
+                    showMessage('Please enter current password to change password', 'error');
+                    saveButton.disabled = false;
+                    saveButton.textContent = 'Save Changes';
+                    return;
+                }
+                
+                // Verify current password
+                const allDoctorsResponse = await fetch('http://127.0.0.1:8001/api/doctors/');
+                if (allDoctorsResponse.ok) {
+                    const allDoctors = await allDoctorsResponse.json();
+                    const doctor = allDoctors.find(d => d.id === currentDoctor.id && d.password === currentPassword);
+                    
+                    if (!doctor) {
+                        showMessage('Current password is incorrect', 'error');
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Save Changes';
+                        return;
+                    }
+                    
+                    // Add new password to update data
+                    formData.password = newPassword;
+                }
+            }
+            
+            try {
+                // Send update request
+                const response = await fetch(`http://127.0.0.1:8001/api/doctors/${currentDoctor.id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    const updatedDoctor = await response.json();
+                    
+                    // Update local data
+                    currentDoctor = updatedDoctor;
+                    localStorage.setItem('doctor_data', JSON.stringify(updatedDoctor));
+                    
+                    // Update display
+                    displayDoctorProfile(updatedDoctor);
+                    
+                    // Clear password fields
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    
+                    showMessage('Profile updated successfully!', 'success');
+                    
+                } else {
+                    const errorData = await response.json();
+                    const errorMessage = errorData.email ? 'Email already exists' : 
+                                        errorData.detail || 'Failed to update profile';
+                    showMessage(errorMessage, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+            }
+        });
+        
+        function resetForm() {
+            if (currentDoctor) {
+                displayDoctorProfile(currentDoctor);
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                showMessage('Form reset to current values', 'info');
+            }
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'http://127.0.0.1:8001/admin/doctor_login_page/';
+        }
+        
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
