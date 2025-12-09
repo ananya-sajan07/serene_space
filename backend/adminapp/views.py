@@ -45,6 +45,14 @@ def admin_logout(request):
     #Clear Session
     request.session.flush()
     return redirect('admin_login')
+
+def manage_users(request):
+    #Check if admin is logged in
+    if not request.session.get('admin_logged_in'):
+        return redirect('admin_login')
+    
+    #Admin is logged in, show manage users page
+    return render(request, 'adminapp/manage_users.html')
                           
 
 
