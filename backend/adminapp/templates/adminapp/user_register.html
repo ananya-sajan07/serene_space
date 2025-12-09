@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration - Serene Space</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+        }
+        
+        .btn-submit {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+        
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-reset:hover {
+            background: #e2e8f0;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .login-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>User Registration</h1>
+            <p>Create your account on Serene Space</p>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message"></div>
+            
+            <form id="userRegisterForm">
+                <div class="form-group">
+                    <label class="required" for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label class="required" for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="user@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label class="required" for="password">Password</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label class="required" for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required minlength="6">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
+                    <button type="submit" class="btn btn-submit">Create Account</button>
+                </div>
+                
+                <div class="login-link">
+                    Already have an account? <a href="http://127.0.0.1:8001/api/login/">Login here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('userRegisterForm');
+        const messageDiv = document.getElementById('message');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            // Validation
+            if (!name || !email || !password || !confirmPassword) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Creating account...', 'success');
+                
+                // Prepare data
+                const formData = {
+                    name: name,
+                    email: email,
+                    password: password,
+                    is_admin: false  // Regular user by default
+                };
+                
+                // Send registration request
+                const response = await fetch('http://127.0.0.1:8001/api/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Registration successful! You can now login.', 'success');
+                    resetForm();
+                    
+                    // Auto-clear success message after 5 seconds
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 5000);
+                    
+                } else {
+                    // Handle validation errors
+                    const errorMessage = data.email ? 'Email already exists' : 
+                                       data.detail || 'Registration failed. Please try again.';
+                    showMessage(errorMessage, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        });
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function resetForm() {
+            form.reset();
+            messageDiv.style.display = 'none';
+        }
+        
+        // Real-time password match validation
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        
+        function validatePasswordMatch() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (password && confirmPassword) {
+                if (password !== confirmPassword) {
+                    confirmPasswordInput.style.borderColor = '#dc2626';
+                } else {
+                    confirmPasswordInput.style.borderColor = '#10b981';
+                }
+            } else {
+                confirmPasswordInput.style.borderColor = '#e2e8f0';
+            }
+        }
+        
+        passwordInput.addEventListener('input', validatePasswordMatch);
+        confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+        
+        // Optional: Fill sample data for testing
+        function fillSampleData() {
+            document.getElementById('name').value = 'Test User';
+            document.getElementById('email').value = 'testuser@example.com';
+            document.getElementById('password').value = 'password123';
+            document.getElementById('confirm_password').value = 'password123';
+        }
+        
+        // Uncomment the line below to enable sample data filling for testing
+        // document.addEventListener('DOMContentLoaded', fillSampleData);
+    </script>
+</body>
+</html>

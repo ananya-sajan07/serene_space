@@ -1,10 +1,10 @@
-from rest_framework import viewsets
-from .models import User, MoodLog
-from .serializers import UserSerializer, MoodLogSerializer
-
+from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+
+from .models import User, MoodLog
+from .serializers import UserSerializer, DoctorSerializer, MoodLogSerializer
+from adminapp.models import tbl_hospital_doctor_register
 
 @api_view(['POST'])
 def register(request):
@@ -35,6 +35,18 @@ def login(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class DoctorViewSet(viewsets.ModelViewSet):
+    queryset =tbl_hospital_doctor_register.objects.all()
+    serializer_class = DoctorSerializer
+
+@api_view(['POST'])
+def doctor_register(request):
+    serializer = DoctorSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Doctor registration successful. Waiting for admin approval."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MoodLogViewSet(viewsets.ModelViewSet):
     queryset = MoodLog.objects.all()

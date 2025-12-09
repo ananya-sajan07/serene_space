@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import SereneAdmin
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from core.models import User
 
 @csrf_exempt
 def admin_login(request):
@@ -53,9 +55,16 @@ def manage_users(request):
     
     #Admin is logged in, show manage users page
     return render(request, 'adminapp/manage_users.html')
+
+def manage_doctors(request):
+    if 'admin_email' not in request.session:
+        return redirect('admin_login')
+    
+    return render(request, 'adminapp/manage_doctors.html')
                           
 
-
-
+def doctor_registration_page(request):
+    # Simple Page for Doctors to Register (not Admin Protected)
+    return render(request, 'adminapp/doctor_register.html')
 
 

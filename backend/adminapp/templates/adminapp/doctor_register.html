@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Registration - Serene Space</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1e293b;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+        
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 40px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit {
+            background: #059669;
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-submit:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+        
+        .btn-reset {
+            background: #f1f5f9;
+            color: #475569;
+            flex: 1;
+        }
+        
+        .btn-reset:hover {
+            background: #e2e8f0;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Doctor Registration</h1>
+            <p>Register as a medical professional on Serene Space</p>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message"></div>
+            
+            <form id="doctorRegisterForm">
+                <div class="form-grid">
+                    <!-- Basic Information -->
+                    <div class="form-group">
+                        <label class="required" for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Dr. John Smith">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required" for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="doctor@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required" for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required" for="qualification">Qualification</label>
+                        <input type="text" id="qualification" name="qualification" required placeholder="MD, MBBS, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="required" for="specialization">Specialization</label>
+                        <input type="text" id="specialization" name="specialization" required placeholder="Cardiologist, Psychiatrist, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experience">Years of Experience</label>
+                        <input type="number" id="experience" name="experience" min="0" placeholder="10">
+                    </div>
+                    
+                    <!-- Personal Details -->
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" min="25" max="80" placeholder="45">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="place">City/Place</label>
+                        <input type="text" id="place" name="place" placeholder="New York">
+                    </div>
+                    
+                    <!-- Hospital Information -->
+                    <div class="form-group full-width">
+                        <label for="hospital_name">Hospital/Clinic Name</label>
+                        <input type="text" id="hospital_name" name="hospital_name" placeholder="City General Hospital">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="hospital_address">Hospital Address</label>
+                        <textarea id="hospital_address" name="hospital_address" placeholder="123 Medical Street, City, State, ZIP"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hospital_phone">Hospital Phone</label>
+                        <input type="tel" id="hospital_phone" name="hospital_phone" placeholder="555-0123">
+                    </div>
+                    
+                    <!-- Location (Optional) -->
+                    <div class="form-group">
+                        <label for="latitude">Latitude (Optional)</label>
+                        <input type="number" step="any" id="latitude" name="latitude" placeholder="40.7128">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitude">Longitude (Optional)</label>
+                        <input type="number" step="any" id="longitude" name="longitude" placeholder="-74.0060">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-reset" onclick="resetForm()">Reset Form</button>
+                    <button type="submit" class="btn btn-submit">Register as Doctor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('doctorRegisterForm');
+        const messageDiv = document.getElementById('message');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                qualification: document.getElementById('qualification').value.trim(),
+                specialization: document.getElementById('specialization').value.trim(),
+                experience: parseInt(document.getElementById('experience').value) || null,
+                age: parseInt(document.getElementById('age').value) || null,
+                gender: document.getElementById('gender').value || null,
+                place: document.getElementById('place').value.trim() || null,
+                hospital_name: document.getElementById('hospital_name').value.trim() || null,
+                hospital_address: document.getElementById('hospital_address').value.trim() || null,
+                hospital_phone: document.getElementById('hospital_phone').value.trim() || null,
+                latitude: document.getElementById('latitude').value ? parseFloat(document.getElementById('latitude').value) : null,
+                longitude: document.getElementById('longitude').value ? parseFloat(document.getElementById('longitude').value) : null,
+                role: 'hospital_doctor',
+                available: true,
+                status: 'pending'
+            };
+            
+            // Validate required fields
+            if (!formData.name || !formData.email || !formData.password || !formData.qualification || !formData.specialization) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showMessage('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            try {
+                showMessage('Registering doctor...', 'success');
+                
+                // Send registration request
+                const response = await fetch('http://127.0.0.1:8001/api/doctor_register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(data.message || 'Registration successful! Your account is pending admin approval.', 'success');
+                    resetForm();
+                    
+                    // Auto-clear success message after 5 seconds
+                    setTimeout(() => {
+                        messageDiv.style.display = 'none';
+                    }, 5000);
+                    
+                } else {
+                    // Handle validation errors
+                    const errorMessage = data.email ? 'Email already exists' : 
+                                       data.detail || 'Registration failed. Please check your information.';
+                    showMessage(errorMessage, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        });
+        
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function resetForm() {
+            form.reset();
+            messageDiv.style.display = 'none';
+        }
+        
+        // Add some sample data for testing (optional)
+        function fillSampleData() {
+            document.getElementById('name').value = 'Dr. Jane Wilson';
+            document.getElementById('email').value = 'drjane@example.com';
+            document.getElementById('password').value = 'doctor123';
+            document.getElementById('qualification').value = 'MD, PhD';
+            document.getElementById('specialization').value = 'Psychiatrist';
+            document.getElementById('experience').value = '8';
+            document.getElementById('age').value = '42';
+            document.getElementById('gender').value = 'Female';
+            document.getElementById('place').value = 'Los Angeles';
+            document.getElementById('hospital_name').value = 'Mental Wellness Center';
+            document.getElementById('hospital_address').value = '456 Therapy Lane, Los Angeles, CA 90001';
+            document.getElementById('hospital_phone').value = '555-9876';
+        }
+        
+        // Uncomment the line below to enable sample data filling for testing
+        // document.addEventListener('DOMContentLoaded', fillSampleData);
+    </script>
+</body>
+</html>
