@@ -244,7 +244,7 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Sl. No.</th>
             <th>Name</th>
             <th>Email</th>
             <th>Registered</th>
@@ -293,8 +293,7 @@
       <span class="admin-badge">ADMIN</span>
       <button class="logout-btn" id="logoutBtn">Logout</button>
       `;
-      // Load dashboard data
-      loadDashboardData();
+      
       loadRecentUsers();
 
 // Logout button
@@ -347,30 +346,37 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
         return;
       }
       
+      // Sort users: Admins first (newest first), then regular users (newest first)
+      const sortedUsers = users.sort((a, b) => {
+        // First sort by admin status (admins first)
+        if (a.is_admin && !b.is_admin) return -1;
+        if (!a.is_admin && b.is_admin) return 1;
+
+        // If same admin status, sort by created_at (newest first)
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+
       // Show ALL users (not just first 5) for Manage Users page
       let html = '';
-      
-      users.forEach(user => {
-        const dateObj = new Date(user.created_at);
-        const day = dateObj.getDate();
-        const month = dateObj.getMonth() + 1;
-        const year = dateObj.getFullYear().toString().slice(-2);
-        const date = `${day}/${month}/${year}`;
+
+      sortedUsers.forEach((user, index) => {
+        const date = formatDate(user.created_at);
+
         html += `
-            <tr>
-              <td>${user.id}</td>
-              <td>${user.name}</td>
-              <td>${user.email}</td>
-              <td>${date}</td>
-              <td>${user.is_admin ? '<span style="color:#60a5fa">Admin</span>' : '<span style="color:#94a3b8">User</span>'}</td>
-              <td>
-                <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
-                <button class="view-more-btn" onclick="viewUserDetails(${user.id})">View More</button>
-              </td>
-            </tr>
-          `;
+          <tr>
+            <td>${index + 1}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${date}</td>
+            <td>${user.is_admin ? '<span style="color:#60a5fa">Admin</span>' : '<span style="color:#94a3b8">User</span>'}</td>
+            <td>
+              <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+              <button class="view-more-btn" onclick="viewUserDetails(${user.id})">View More</button>
+            </td>
+          </tr>
+        `;
       });
-      
+
       usersTable.innerHTML = html;
       
       // Don't update totalUsers count (that's for dashboard)
@@ -615,6 +621,14 @@ document.getElementById('editModal').addEventListener('click', function(e) {
     closeEditModal();
   }
 });
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
   </script>
 
 <!-- Edit User Modal -->

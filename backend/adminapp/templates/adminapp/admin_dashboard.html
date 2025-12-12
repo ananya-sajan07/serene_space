@@ -125,12 +125,24 @@
     .card .number {
       font-size: 32px;
       font-weight: bold;
-      color: #60a5fa;
       margin-bottom: 8px;
     }
     .card .subtext {
       color: #cbd5e1;
       font-size: 13px;
+    }
+    /* Add these color classes for stats */
+    .user-count {
+      color: #60a5fa; /* Blue for Users */
+    }
+    .doctor-count {
+      color: #f59e0b 
+    }
+    .pending-count {
+      color: #10b981 ; 
+    }
+    .logs-count {
+      color: #dc2626;
     }
     .section-title {
       font-size: 18px;
@@ -244,22 +256,22 @@
     <div class="dashboard-grid">
       <div class="card">
         <h3>Total Users</h3>
-        <div class="number" id="totalUsers">0</div>
+        <div class="number user-count" id="totalUsers">0</div>
         <div class="subtext">Registered users</div>
       </div>
       <div class="card">
         <h3>Total Doctors</h3>
-        <div class="number" id="totalDoctors">0</div>
+        <div class="number doctor-count" id="totalDoctors">0</div>
         <div class="subtext">Medical professionals</div>
       </div>
       <div class="card">
         <h3>Pending Approvals</h3>
-        <div class="number" id="pendingApprovals">0</div>
+        <div class="number pending-count" id="pendingApprovals">0</div>
         <div class="subtext">Doctors awaiting approval</div>
       </div>
       <div class="card">
         <h3>Today's Logs</h3>
-        <div class="number" id="todayLogs">0</div>
+        <div class="number logs-count" id="todayLogs">0</div>
         <div class="subtext">Mood logs today</div>
       </div>
     </div>
@@ -337,19 +349,53 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
       });
     });
 
-    async function loadDashboardData() {
-      try {
-        // For now, we'll set placeholder data
-        // Later we'll make API calls to get real data
+    async function loadDashboardData() 
+    {
+      try 
+      {
+        // Fetch users data
+        const usersResponse = await fetch('http://127.0.0.1:8001/api/users/', {
+          credentials: 'include'
+        });
+
+        // Fetch doctors data
+        const doctorsResponse = await fetch('http://127.0.0.1:8001/api/doctors/', {
+          credentials: 'include'
+        });
+
+        if (usersResponse.ok && doctorsResponse.ok) 
+        {
+          const users = await usersResponse.json();
+          const doctors = await doctorsResponse.json();
+
+          // Update user count
+          document.getElementById('totalUsers').textContent = users.length;
+
+          // Update doctor counts
+          const totalDoctors = doctors.length;
+          const pendingDoctors = doctors.filter(d => d.status === 'pending').length;
+
+          document.getElementById('totalDoctors').textContent = totalDoctors;
+          document.getElementById('pendingApprovals').textContent = pendingDoctors;
+          document.getElementById('todayLogs').textContent = '--'; // Still placeholder
+
+          showMessage('Dashboard loaded successfully', 'success');
+        } 
+        else 
+        {
+          throw new Error('Failed to fetch dashboard data');
+        }
+      } 
+      catch (error) 
+      {
+        console.error('Error loading dashboard:', error);
+        showMessage('Error loading dashboard data', 'error');
+
+        // Set placeholder values if API fails
         document.getElementById('totalUsers').textContent = '--';
         document.getElementById('totalDoctors').textContent = '--';
         document.getElementById('pendingApprovals').textContent = '--';
         document.getElementById('todayLogs').textContent = '--';
-        
-        showMessage('Dashboard loaded successfully', 'success');
-      } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showMessage('Error loading dashboard data', 'error');
       }
     }
 
@@ -374,17 +420,22 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
             return;
           }
           
-          // Show only first 5 users
-          const recentUsers = users.slice(0, 5);
-          let html = '';
-          
-          recentUsers.forEach((user, index) => {
-            const dateObj = new Date(user.created_at);
-            const day = dateObj.getDate();
-            const month = dateObj.getMonth() + 1;
-            const year = dateObj.getFullYear().toString().slice(-2);
-            const date = `${day}/${month}/${year}`;
+          // Sort users: Admins first (newest first), then regular users (newest first)
+          const sortedUsers = users.sort((a, b) => {
+            // First sort by admin status (admins first)
+            if (a.is_admin && !b.is_admin) return -1;
+            if (!a.is_admin && b.is_admin) return 1;
 
+            // If same admin status, sort by created_at (newest first)
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+
+          // Show only first 5 users from sorted list
+          const recentUsers = sortedUsers.slice(0, 5);
+          let html = '';
+
+          recentUsers.forEach((user, index) => {
+            const date = formatDate(user.created_at);
             html += `
               <tr>
                 <td>${index + 1}</td>
@@ -641,6 +692,13 @@ document.getElementById('editModal').addEventListener('click', function(e) {
     closeEditModal();
   }
 });
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
   </script>
 
 <!-- Edit User Modal -->

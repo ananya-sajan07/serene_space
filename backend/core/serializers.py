@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import User, MoodLog
-from adminapp.models import tbl_hospital_doctor_register
+from .models import User, Doctor, MoodLog
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = tbl_hospital_doctor_register
+        model = Doctor
         fields = '__all__'
 
 class MoodLogSerializer(serializers.ModelSerializer):

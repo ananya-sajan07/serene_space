@@ -2,9 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import User, MoodLog
+from .models import User, Doctor, MoodLog
 from .serializers import UserSerializer, DoctorSerializer, MoodLogSerializer
-from adminapp.models import tbl_hospital_doctor_register
+
 
 @api_view(['POST'])
 def register(request):
@@ -19,6 +19,7 @@ def login(request):
     email = request.data.get('email')
     password = request.data.get('password')
 
+    #First Check - User Model
     try:
         user = User.objects.get(email=email, password=password)
         return Response({
@@ -26,10 +27,33 @@ def login(request):
             "user_id": user.id,
             "name": user.name,
             "email": user.email,
+            "role": "user",
             "is_admin": user.is_admin
         })
     except User.DoesNotExist:
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        pass #Not a User, Check if Doctor
+
+    #Check - Doctor Model
+    try:
+        doctor = Doctor.objects.get(email=email, password=password, status = 'approved')
+        return Response({
+            "message": "Login Successful",
+            "user_id": doctor.id,
+            "name": doctor.name,
+            "email":doctor.email,
+            "role": "doctor"
+        })
+    
+    except Doctor.DoesNotExist:
+        #Check if Doctor exists but not "approved"
+        try:
+            doctor = Doctor.objects.get(email = email, password = password)
+            #Doctor exists but status is not 'approved'
+            return Response({
+                "error": "Your account is not Approved yet. Please wait for Admin Approval."
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        except Doctor.DoesNotExist:
+            return Response({"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -37,7 +61,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 class DoctorViewSet(viewsets.ModelViewSet):
-    queryset =tbl_hospital_doctor_register.objects.all()
+    queryset =Doctor.objects.all()
     serializer_class = DoctorSerializer
 
 @api_view(['POST'])

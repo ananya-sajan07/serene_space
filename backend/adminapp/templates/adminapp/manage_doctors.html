@@ -198,6 +198,10 @@
       background: #dc2626;
       color: #fecaca;
     }
+    .filter-tab.active {
+      background: #1e40af !important;
+      color: white !important;
+    }
   </style>
 </head>
 <body>
@@ -252,11 +256,20 @@
     </div>
 
     <!-- Doctors Table -->
+    <!-- Filter Tabs -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px;">
+      <button id="allTab" class="filter-tab active" onclick="filterDoctors('all')" style="padding: 8px 16px; background: #1e40af; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">All Doctors</button>
+      <button id="pendingTab" class="filter-tab" onclick="filterDoctors('pending')" style="padding: 8px 16px; background: #334155; color: #cbd5e1; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">Pending</button>
+      <button id="approvedTab" class="filter-tab" onclick="filterDoctors('approved')" style="padding: 8px 16px; background: #334155; color: #cbd5e1; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">Approved</button>
+      <button id="rejectedTab" class="filter-tab" onclick="filterDoctors('rejected')" style="padding: 8px 16px; background: #334155; color: #cbd5e1; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">Rejected</button>
+    </div>
+
+    <!-- Doctors Table -->
     <div class="table-container">
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Sl. No.</th>
             <th>Name</th>
             <th>Email</th>
             <th>Specialization</th>
@@ -295,6 +308,26 @@
   </div>
 
   <script>
+    // Get CSRF token from cookie
+    function getCSRFToken() {
+        const name = 'csrftoken=';
+        const decodedCookie = decodeURIComponent(document.cookie);
+        const ca = decodedCookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return '';
+    }
+    // Move these variables outside to make them global
+    let allDoctors = []; // Store all doctors
+    let currentFilter = 'all'; // Current filter
+
     document.addEventListener('DOMContentLoaded', function() {
       // Display admin info
       document.querySelector('.admin-info').innerHTML = `
@@ -324,12 +357,12 @@
         const response = await fetch('http://127.0.0.1:8001/api/doctors/', {
           credentials: 'include'
         });
-        
+
         if (response.ok) {
-          const doctors = await response.json();
-          const doctorsTable = document.getElementById('doctorsTable');
-          
-          if (doctors.length === 0) {
+          allDoctors = await response.json(); // Store in global variable
+
+          if (allDoctors.length === 0) {
+            const doctorsTable = document.getElementById('doctorsTable');
             doctorsTable.innerHTML = `
               <tr>
                 <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
@@ -337,54 +370,13 @@
                 </td>
               </tr>
             `;
-            updateStats(doctors);
+            updateStats(allDoctors);
             return;
           }
-          
-          let html = '';
-          let pendingCount = 0;
-          let approvedCount = 0;
-          let rejectedCount = 0;
-          
-          doctors.forEach(doctor => {
-            // Count status
-            if (doctor.status === 'pending') pendingCount++;
-            else if (doctor.status === 'approved') approvedCount++;
-            else if (doctor.status === 'rejected') rejectedCount++;
-            
-            // Status badge
-            let statusBadge = '';
-            if (doctor.status === 'pending') {
-              statusBadge = '<span class="status-badge pending-badge">Pending</span>';
-            } else if (doctor.status === 'approved') {
-              statusBadge = '<span class="status-badge approved-badge">Approved</span>';
-            } else if (doctor.status === 'rejected') {
-              statusBadge = '<span class="status-badge rejected-badge">Rejected</span>';
-            }
-            
-            html += `
-              <tr>
-                <td>${doctor.id}</td>
-                <td>${doctor.name}</td>
-                <td>${doctor.email}</td>
-                <td>${doctor.specialization || 'N/A'}</td>
-                <td>${doctor.hospital_name || 'N/A'}</td>
-                <td>${statusBadge}</td>
-                <td>
-                  <button class="action-btn view-btn" onclick="viewDoctorDetails(${doctor.id})">View</button>
-                  ${doctor.status === 'pending' ? `
-                    <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
-                    <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
-                  ` : ''}
-                  <button class="action-btn delete-btn" onclick="deleteDoctor(${doctor.id})">Delete</button>
-                </td>
-              </tr>
-            `;
-          });
-          
-          doctorsTable.innerHTML = html;
-          updateStats(doctors, pendingCount, approvedCount, rejectedCount);
-          
+
+          // Show filtered doctors based on current filter
+          filterDoctors(currentFilter);
+
         } else {
           throw new Error('Failed to fetch doctors');
         }
@@ -399,6 +391,120 @@
         `;
       }
     }
+
+    // This function should be OUTSIDE loadDoctors
+    function filterDoctors(status) {
+      currentFilter = status;
+
+      // Update active tab
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.background = '#334155';
+        tab.style.color = '#cbd5e1';
+      });
+
+      // Set active tab
+      if (status === 'all') {
+        document.getElementById('allTab').classList.add('active');
+        document.getElementById('allTab').style.background = '#1e40af';
+        document.getElementById('allTab').style.color = 'white';
+      } else if (status === 'pending') {
+        document.getElementById('pendingTab').classList.add('active');
+        document.getElementById('pendingTab').style.background = '#1e40af';
+        document.getElementById('pendingTab').style.color = 'white';
+      } else if (status === 'approved') {
+        document.getElementById('approvedTab').classList.add('active');
+        document.getElementById('approvedTab').style.background = '#1e40af';
+        document.getElementById('approvedTab').style.color = 'white';
+      } else if (status === 'rejected') {
+        document.getElementById('rejectedTab').classList.add('active');
+        document.getElementById('rejectedTab').style.background = '#1e40af';
+        document.getElementById('rejectedTab').style.color = 'white';
+      }
+
+      // Filter doctors
+      let filteredDoctors;
+      if (status === 'all') {
+        filteredDoctors = allDoctors;
+      } else {
+        filteredDoctors = allDoctors.filter(doctor => doctor.status === status);
+      }
+
+      // Update table
+      updateDoctorsTable(filteredDoctors);
+    }
+
+    // Add this new function
+    function updateDoctorsTable(doctors) {
+      const doctorsTable = document.getElementById('doctorsTable');
+
+      if (doctors.length === 0) {
+        let message = 'No doctors found';
+        if (currentFilter === 'pending') message = 'No pending doctors';
+        else if (currentFilter === 'approved') message = 'No approved doctors';
+        else if (currentFilter === 'rejected') message = 'No rejected doctors';
+
+        doctorsTable.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+              ${message}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+
+
+      doctors.forEach((doctor, index) => {
+        
+        // Status badge
+        let statusBadge = '';
+        if (doctor.status === 'pending') {
+          statusBadge = '<span class="status-badge pending-badge">Pending</span>';
+        } else if (doctor.status === 'approved') {
+          statusBadge = '<span class="status-badge approved-badge">Approved</span>';
+        } else if (doctor.status === 'rejected') {
+          statusBadge = '<span class="status-badge rejected-badge">Rejected</span>';
+        }
+
+        html += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${doctor.name}</td>
+            <td>${doctor.email}</td>
+            <td>${doctor.specialization || 'N/A'}</td>
+            <td>${doctor.hospital_name || 'N/A'}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="action-btn view-btn" onclick="viewDoctorDetails(${doctor.id})">View</button>
+              ${doctor.status === 'pending' ? `
+                <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
+                <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
+              ` : ''}
+              ${doctor.status === 'approved' ? `
+                <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
+              ` : ''}
+
+              ${doctor.status === 'rejected' ? `
+                <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
+              ` : ''}
+              <button class="action-btn delete-btn" onclick="deleteDoctor(${doctor.id})">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      doctorsTable.innerHTML = html;
+
+      // Always update stats with counts from ALL doctors
+      let allPending = allDoctors.filter(d => d.status === 'pending').length;
+      let allApproved = allDoctors.filter(d => d.status === 'approved').length;
+      let allRejected = allDoctors.filter(d => d.status === 'rejected').length;
+      updateStats(allDoctors, allPending, allApproved, allRejected);
+    }
+        
 
     function updateStats(doctors, pending = 0, approved = 0, rejected = 0) {
       document.getElementById('totalDoctors').textContent = doctors.length;
@@ -525,7 +631,8 @@
           const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
-              'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
             },
             credentials: 'include',
             body: JSON.stringify(doctor)
@@ -570,7 +677,8 @@
           const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
-              'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(), 
             },
             credentials: 'include',
             body: JSON.stringify(doctor)
@@ -601,8 +709,9 @@
             method: 'DELETE',
             credentials: 'include',
             headers: {
-              'Content-Type': 'application/json',
-            }
+    'Content-Type': 'application/json',
+    'X-CSRFToken': getCSRFToken(),  // Add this line
+},
           });
           
           if (response.ok) {
