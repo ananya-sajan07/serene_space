@@ -1,3 +1,15 @@
+# View functions for Custom Admin Panel (adminapp)
+
+# This module handles all the admin dashboard functionality including:
+# - Admin authentication (login/logout)
+# - User management
+# - Doctor management  
+# - Book management
+# - Registration and login pages for users/doctors
+
+# All admin routes are prefixed with /admin/
+# Example: /admin/login/, /admin/dashboard/, /admin/manage_users/
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from .models import SereneAdmin
@@ -87,3 +99,23 @@ def doctor_login_page(request):
 def doctor_edit_page(request):
     #Simple Page for Doctors to Edit their Details (not Admin Protected)
     return render(request, 'adminapp/doctor_edit.html')
+
+def manage_books(request):
+    if not request.session.get('admin_logged_in'): #Check if admin is logged in
+        return redirect('admin_login')
+    
+    from core.models import Book #Get all books from Database
+    books = Book.objects.all()
+
+    return render(request, 'adminapp/manage_books.html', {'books': books}) #Pass books to template
+
+def view_book(request, book_id):
+    if not request.session.get('admin_logged_in'):
+        return redirect('admin_login')
+    
+    try:
+        from core.models import Book
+        book = Book.objects.get(id=book_id)
+        return render(request, 'adminapp/view_book.html', {'book': book})
+    except Book.DoesNotExist:
+        return render(request, 'adminapp/view_book.html', {'error': 'Book not found'})

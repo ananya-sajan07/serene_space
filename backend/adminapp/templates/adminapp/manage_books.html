@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serene Space — Manage Books</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background: #1e293b;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 24px 0;
+      border-right: 1px solid #334155;
+    }
+    .main-content {
+      margin-left: 240px;
+      padding: 24px;
+    }
+    .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 24px;
+    }
+    .logo h1 {
+      font-size: 20px;
+      color: #60a5fa;
+    }
+    .logo .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .nav-item {
+      display: block;
+      padding: 12px 24px;
+      color: #cbd5e1;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-item:hover {
+      background: #334155;
+      color: #f1f5f9;
+    }
+    .nav-item.active {
+      background: #1e40af;
+      color: white;
+      border-left-color: #60a5fa;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #334155;
+    }
+    .header h2 {
+      font-size: 24px;
+      color: #f1f5f9;
+    }
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-badge {
+      background: #1e40af;
+      color: #dbeafe;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .logout-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .logout-btn:hover {
+      background: #b91c1c;
+    }
+    .section-title {
+      font-size: 18px;
+      margin: 30px 0 20px;
+      color: #f1f5f9;
+    }
+    .table-container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      background: #334155;
+      padding: 16px;
+      text-align: left;
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+
+    td:nth-child(6) {  /* 6th column is Actions */
+      white-space: nowrap;
+      min-width: 200px;
+    }
+    tr:hover {
+      background: #2d3748;
+    }
+    .view-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .view-btn:hover {
+      background: #2563eb;
+    }
+    .action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+    .approve-btn {
+      background: #059669;
+      color: white;
+    }
+    .reject-btn {
+      background: #dc2626;
+      color: white;
+    }
+    .delete-btn {
+      background: #7c2d12;
+      color: white;
+    }
+    .msg {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .error-msg {
+      background: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #dc2626;
+    }
+    .success-msg {
+      background: #065f46;
+      color: #a7f3d0;
+      border: 1px solid #10b981;
+    }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .pending-badge {
+      background: #f59e0b;
+      color: #78350f;
+    }
+    .approved-badge {
+      background: #10b981;
+      color: #064e3b;
+    }
+    .rejected-badge {
+      background: #dc2626;
+      color: #fecaca;
+    }
+    .filter-tab.active {
+      background: #1e40af !important;
+      color: white !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <h1>Serene Space</h1>
+      <div class="subtitle">Admin Dashboard</div>
+    </div>
+    <a href="/admin/dashboard/" class="nav-item">Dashboard</a>
+    <a href="/admin/manage_users/" class="nav-item">Manage Users</a>
+    <a href="/admin/manage_doctors/" class="nav-item">Manage Doctors</a>
+    <a href="#" class="nav-item active">Manage Books</a>
+    <a href="#" class="nav-item">Reports</a>
+    <a href="#" class="nav-item">System Settings</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <h2>Manage Books</h2>
+      <div class="admin-info">
+        <span class="admin-badge">ADMINISTRATOR</span>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="message" class="msg"></div>
+
+    <!-- Books Management content will go here -->
+    <div style="text-align: center; padding: 50px; color: #94a3b8;">
+      <h3>Book Management Page</h3>
+      <p>This page will allow admin to add, edit, and delete books.</p>
+      <p>Books will be categorized as: ADHD-based, Depression-based, General Mental Health</p>
+    </div>
+
+        <!-- Add Book Button -->
+    <div style="text-align: right; margin-bottom: 20px;">
+      <button id="addBookBtn" style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+        + Add New Book
+      </button>
+    </div>
+
+    <!-- Books Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Sl. No.</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="booksTable">
+          {% if books %}
+            {% for book in books %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ book.title }}</td>
+              <td>{{ book.author }}</td>
+              <td>
+                {% if book.category == 'adhd' %}
+                  <span style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">ADHD</span>
+                {% elif book.category == 'depression' %}
+                  <span style="background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Depression</span>
+                {% elif book.category == 'anxiety' %}
+                  <span style="background: #f59e0b; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Anxiety</span>
+                {% else %}
+                  <span style="background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">General</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if book.is_active %}
+                  <span style="background: #10b981; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Active</span>
+                {% else %}
+                  <span style="background: #dc2626; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <button class="action-btn view-btn" onclick="viewBook('{{book.id}}')">View</button>
+                <button class="action-btn" style="background: #f59e0b; color: white;" onclick="editBook('{{book.id}}')">Edit</button>
+                <button class="action-btn delete-btn" onclick="deleteBook('{{book.id}}')">Delete</button>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+                No books found. Click "Add New Book" to add books.
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div id="addBookModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: #1e293b; width: 600px; border-radius: 12px; border: 1px solid #334155; padding: 24px; max-width: 90%; max-height: 90%; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #334155;">
+          <h3 style="color: #60a5fa; font-size: 18px;">Add New Book</h3>
+          <button onclick="closeAddBookModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <form id="addBookForm">
+          <div style="display: grid; gap: 16px;">
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Book Title *</label>
+              <input type="text" id="bookTitle" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Author *</label>
+              <input type="text" id="bookAuthor" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Category *</label>
+              <select id="bookCategory" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+                <option value="">Select Category</option>
+                <option value="adhd">ADHD</option>
+                <option value="depression">Depression</option>
+                <option value="anxiety">Anxiety</option>
+                <option value="general">General Mental Health</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Description *</label>
+              <textarea id="bookDescription" required rows="4" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; resize: vertical;"></textarea>
+            </div>
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Cover Image</label>
+              <input type="file" id="bookCoverImage" accept="image/*" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+              <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Optional: Upload book cover image (JPG, PNG)</div>
+            </div>
+
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">
+                <input type="checkbox" id="bookActive" checked style="margin-right: 8px;">
+                Book is Active (visible to users)
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" onclick="closeAddBookModal()" style="background: #475569; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+            <button type="submit" style="background: #059669; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Add Book</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="editBookModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: #1e293b; width: 600px; border-radius: 12px; border: 1px solid #334155; padding: 24px; max-width: 90%; max-height: 90%; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #334155;">
+          <h3 style="color: #60a5fa; font-size: 18px;">Edit Book</h3>
+          <button onclick="closeEditBookModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <form id="editBookForm">
+          <input type="hidden" id="editBookId">
+          <div style="display: grid; gap: 16px;">
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Book Title *</label>
+              <input type="text" id="editBookTitle" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Author *</label>
+              <input type="text" id="editBookAuthor" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Category *</label>
+              <select id="editBookCategory" required style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+                <option value="">Select Category</option>
+                <option value="adhd">ADHD</option>
+                <option value="depression">Depression</option>
+                <option value="anxiety">Anxiety</option>
+                <option value="general">General Mental Health</option>
+              </select>
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Description *</label>
+              <textarea id="editBookDescription" required rows="4" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px; resize: vertical;"></textarea>
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Current Cover Image</label>
+              <div id="currentCoverImage" style="margin-bottom: 10px;">
+                <!-- Current image will be shown here -->
+              </div>
+            </div>
+              
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">Cover Image</label>
+              <input type="file" id="editBookCoverImage" accept="image/*" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white; font-size: 14px;">
+              <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Optional: Upload book cover image (JPG, PNG)</div>
+            </div>
+            
+            <div>
+              <label style="color: #94a3b8; font-size: 13px; margin-bottom: 4px; display: block;">
+                <input type="checkbox" id="editBookActive" style="margin-right: 8px;">
+                Book is Active (visible to users)
+              </label>
+            </div>
+          </div>
+          
+          <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" onclick="closeEditBookModal()" style="background: #475569; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+            <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Update Book</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="bookModal" style="display: none;">
+      <!-- Book form will go here -->
+    </div>
+  </div>
+
+  <script>
+    // Copy JavaScript from manage_doctors.html
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        window.location.href = '/admin/logout/';
+      });
+    });
+    
+    // Book management functions
+    function viewBook(bookId) {
+      // Open admin view book page
+      window.open(`/admin/view_book/${bookId}/`, '_blank');
+    }
+    
+    function deleteBook(bookId) {
+      if (confirm('Are you sure you want to delete book ID: ' + bookId + '?')) {
+        // Send DELETE request to API
+        fetch('/api/books/' + bookId + '/', {
+          method: 'DELETE',
+          headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('Book deleted successfully!');
+            location.reload(); // Refresh page
+          } else {
+            alert('Error deleting book');
+          }
+        })
+        .catch(error => {
+          alert('Error: ' + error);
+        });
+      }
+    }
+    
+    // Add CSRF token function (same as in manage_doctors.html)
+    function getCSRFToken() {
+      const name = 'csrftoken=';
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return '';
+    }
+    
+    
+    // Add Book Modal functions
+    function showAddBookModal() {
+      document.getElementById('addBookModal').style.display = 'flex';
+    }
+    
+    function closeAddBookModal() {
+      document.getElementById('addBookModal').style.display = 'none';
+      document.getElementById('addBookForm').reset();
+    }
+    
+    // Edit Book functions
+    let currentEditBookId = null;
+    
+      function editBook(bookId) {
+      currentEditBookId = bookId;
+      
+      // Fetch book details
+      fetch(`/api/books/${bookId}/`)
+        .then(response => response.json())
+        .then(book => {
+          document.getElementById('editBookId').value = book.id;
+          document.getElementById('editBookTitle').value = book.title;
+          document.getElementById('editBookAuthor').value = book.author;
+          document.getElementById('editBookCategory').value = book.category;
+          document.getElementById('editBookDescription').value = book.description;
+          document.getElementById('editBookActive').checked = book.is_active;
+          
+          // Show current cover image
+          const coverImageDiv = document.getElementById('currentCoverImage');
+          if (book.cover_image) {
+            coverImageDiv.innerHTML = `
+              <img src="${book.cover_image}" alt="Current Cover" style="max-width: 100px; border-radius: 4px; border: 1px solid #475569;">
+              <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Current image</div>
+            `;
+          } else {
+            coverImageDiv.innerHTML = '<div style="color: #94a3b8; font-style: italic;">No cover image uploaded</div>';
+          }    
+          document.getElementById('editBookModal').style.display = 'flex';
+        })
+        .catch(error => {
+          alert('Error loading book: ' + error);
+        });
+    }
+    
+    
+    function closeEditBookModal() {
+      document.getElementById('editBookModal').style.display = 'none';
+      document.getElementById('editBookForm').reset();
+      currentEditBookId = null;
+    }
+    
+    // Edit Book form submission
+    document.getElementById('editBookForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('title', document.getElementById('editBookTitle').value);
+      formData.append('author', document.getElementById('editBookAuthor').value);
+      formData.append('category', document.getElementById('editBookCategory').value);
+      formData.append('description', document.getElementById('editBookDescription').value);
+      formData.append('is_active', document.getElementById('editBookActive').checked);
+      
+      // Handle cover image
+      const coverImage = document.getElementById('editBookCoverImage').files[0];
+      if (coverImage) {
+        formData.append('cover_image', coverImage);
+      }
+      
+      // Send PUT request to API
+      fetch(`/api/books/${currentEditBookId}/`, {
+        method: 'PUT',
+        headers: {
+          'X-CSRFToken': getCSRFToken()
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message && data.message.includes('successfully')) {
+          alert('Book updated successfully!');
+          closeEditBookModal();
+          location.reload(); // Refresh page
+        } else {
+          alert('Error: ' + (data.error || JSON.stringify(data)));
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error);
+      });
+    });
+    
+    // Close edit modal when clicking outside
+    document.getElementById('editBookModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeEditBookModal();
+      }
+    });
+    
+    // Add Book form submission
+        // Add Book form submission
+    document.getElementById('addBookForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('title', document.getElementById('bookTitle').value);
+      formData.append('author', document.getElementById('bookAuthor').value);
+      formData.append('category', document.getElementById('bookCategory').value);
+      formData.append('description', document.getElementById('bookDescription').value);
+      formData.append('is_active', document.getElementById('bookActive').checked);
+      
+      // Handle cover image
+      const coverImage = document.getElementById('bookCoverImage').files[0];
+      if (coverImage) {
+        formData.append('cover_image', coverImage);
+      }
+
+      // Send to API
+      fetch('/api/books/', 
+      {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken()
+          // Note: Don't set Content-Type for FormData, browser sets it automatically
+        },
+        body: formData
+      })
+
+      .then(response => response.json())
+      .then(data => {
+        if (data.message && data.message.includes('successfully')) {
+          alert('Book added successfully!');
+          closeAddBookModal();
+          location.reload(); // Refresh page to show new book
+        } else {
+          alert('Error: ' + (data.error || JSON.stringify(data)));
+        }
+      })
+      .catch(error => {
+        alert('Error: ' + error);
+      });
+    });
+    
+
+    // Update Add Book button to show modal
+    document.getElementById('addBookBtn').addEventListener('click', showAddBookModal);
+    
+    // Close modal when clicking outside
+    document.getElementById('addBookModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeAddBookModal();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,10 +1,13 @@
+#User fills form → Browser sends POST request → views.py function runs (Validates data, saves to database, returns success/error response) → Saves to database → Returns JSON response → Browser shows success message
+#It takes customer orders (requests), prepares food (processes data), and serves meals (responses).
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .adhd_prediction import predict_adhd
-from .models import User, Doctor, MoodLog
-from .serializers import UserSerializer, DoctorSerializer, MoodLogSerializer
+from .models import User, Doctor, Book, MoodLog
+from .serializers import UserSerializer, DoctorSerializer, BookSerializer, MoodLogSerializer
 
 
 @api_view(['POST'])
@@ -113,6 +116,161 @@ def predict_adhd_api(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
+@api_view(['GET', 'PUT', 'DELETE'])
+def book_detail_api(request, book_id):
+    """
+    API to update or delete a book
+    PUT: Update book
+    DELETE: Delete book
+    """
+    try:
+        book = Book.objects.get(id=book_id)
+
+        if request.method == 'GET':
+            serializer = BookSerializer(book)
+            return Response(serializer.data)
+        
+        if request.method == 'PUT':
+            serializer = BookSerializer(book, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Book updated successfully",
+                    "book": serializer.data
+                })
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        elif request.method == 'DELETE':
+            book.delete()
+            return Response({
+                "message": f"Book '{book.title}' deleted successfully"
+            })
+            
+    except Book.DoesNotExist:
+        return Response(
+            {"error": f"Book with ID {book_id} not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
+    
+@api_view(['GET'])
+def get_books_api(request):
+    """
+    API for users to view books
+    Can filter by category: ?category=adhd
+    """
+    try:
+        category = request.GET.get('category')
+        
+        if category:
+            books = Book.objects.filter(category=category, is_active=True)
+        else:
+            books = Book.objects.filter(is_active=True)
+        
+        serializer = BookSerializer(books, many=True)
+        return Response({
+            "count": len(books),
+            "books": serializer.data
+        })
+        
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def get_book_detail_api(request, book_id):
+    """
+    API for users to view a single book
+    """
+    try:
+        book = Book.objects.get(id=book_id, is_active=True)
+        serializer = BookSerializer(book)
+        return Response(serializer.data)
+        
+    except Book.DoesNotExist:
+        return Response(
+            {"error": f"Book with ID {book_id} not found or not active"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['PUT'])
+def update_doctor_availability(request, doctor_id):
+    #Update Doctor's availability status
+    #Expects {"available": true/false}
+
+    try:
+        #Get Doctor
+        doctor = Doctor.objects.get(id=doctor_id)
+
+        #Get new availablity value
+        available = request.data.get('available')
+
+        if available is None:
+            return Response(
+                {"error": "Missing 'available' field in request"},
+                status = status.HTTP_400_BAD_REQUEST
+            )
+
+        #update availability
+        doctor.available = available
+        doctor.save()
+
+        return Response(
+            {
+                "message": f"Doctor {doctor.name} availability updated",
+                "doctor_id": doctor.id,
+                "name": doctor.name,
+                "available": doctor.available
+            }
+        )
+    
+    except Doctor.DoesNotExist:
+        return Response(
+            {"error": f"Doctor with ID {doctor_id} not found"},
+            status = status.HTTP_404_NOT_FOUND
+        )
+    
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status = status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+ 
+@api_view(['POST'])
+def add_book_api(request):
+    """
+    API to add a new book
+    Only accessible to admin
+    Accepts multipart/form-data for file uploads
+    """
+    try:
+        from .serializers import BookSerializer
+        
+        # Handle file uploads - request.FILES contains uploaded files
+        data = request.data.copy()
+        
+        # Convert checkbox value to boolean
+        if 'is_active' in data:
+            data['is_active'] = data['is_active'] in ['true', 'on', True, 'True', 1, '1']
+        
+        serializer = BookSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Book added successfully",
+                "book": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class MoodLogViewSet(viewsets.ModelViewSet):
     queryset = MoodLog.objects.all()
     serializer_class = MoodLogSerializer
