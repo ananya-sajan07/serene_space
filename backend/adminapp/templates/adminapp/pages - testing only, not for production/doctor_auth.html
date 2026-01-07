@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serene Space — Doctor Portal (Testing Only)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 40px;
+      width: 400px;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo h1 {
+      font-size: 24px;
+      color: #10b981;
+    }
+    .logo .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #334155;
+    }
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      color: #94a3b8;
+      border-bottom: 3px solid transparent;
+    }
+    .auth-tab.active {
+      color: #10b981;
+      border-bottom-color: #10b981;
+      font-weight: 500;
+    }
+    .auth-form {
+      display: none;
+    }
+    .auth-form.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      background: #334155;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #10b981;
+    }
+    .auth-btn {
+      width: 100%;
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    .auth-btn:hover {
+      background: #059669;
+    }
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+    .success {
+      background: #065f46;
+      color: #a7f3d0;
+      border: 1px solid #10b981;
+    }
+    .error {
+      background: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #dc2626;
+    }
+    .note {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 11px;
+      margin-top: 20px;
+      font-style: italic;
+    }
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .nav-links a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+    
+    .debug-btn {
+      background: #8b5cf6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    
+    <div class="logo">
+      <h1>Serene Space</h1>
+      <div class="subtitle">Doctor Portal (Testing Only)</div>
+    </div>
+    
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="showTab('login')">Login</div>
+      <div class="auth-tab" onclick="showTab('register')">Register</div>
+    </div>
+    
+    <div id="message" class="message"></div>
+    
+    <!-- Login Form -->
+    <form id="loginForm" class="auth-form active">
+      <div class="form-group">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required>
+      </div>
+      
+      <button type="submit" class="auth-btn">Login as Doctor</button>
+    </form>
+    
+    <!-- Registration Form -->
+    <form id="registerForm" class="auth-form">
+      <div class="form-group">
+        <label for="regName">Full Name</label>
+        <input type="text" id="regName" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regEmail">Email Address</label>
+        <input type="email" id="regEmail" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regPassword">Password</label>
+        <input type="password" id="regPassword" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regConfirmPassword">Confirm Password</label>
+        <input type="password" id="regConfirmPassword" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regQualification">Qualification</label>
+        <input type="text" id="regQualification" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regSpecialization">Specialization</label>
+        <input type="text" id="regSpecialization" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regExperience">Years of Experience</label>
+        <input type="number" id="regExperience" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regHospital">Hospital Name</label>
+        <input type="text" id="regHospital" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regHospitalAddress">Hospital Address</label>
+        <input type="text" id="regHospitalAddress" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regHospitalPhone">Hospital Phone</label>
+        <input type="tel" id="regHospitalPhone" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regAge">Age</label>
+        <input type="number" id="regAge" required>
+      </div>
+
+      <div class="form-group">
+        <label for="regGender">Gender</label>
+        <select id="regGender" required>
+          <option value="">Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="regPlace">Location/City</label>
+        <input type="text" id="regPlace" required>
+      </div>
+
+      <button type="submit" class="auth-btn">Register as Doctor</button>
+    </form>
+    
+    <div class="note">
+      This is only a testing page. Not for Production.
+    </div>
+    
+  </div>
+
+  <script>
+    // Get CSRF token from cookie
+    function getCSRFToken() {
+      const name = 'csrftoken=';
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return '';
+    }
+
+    function showTab(tabName) {
+      // Update tabs
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`.auth-tab[onclick*="${tabName}"]`).classList.add('active');
+      
+      // Update forms
+      document.querySelectorAll('.auth-form').forEach(form => {
+        form.classList.remove('active');
+      });
+      document.getElementById(tabName + 'Form').classList.add('active');
+      
+      // Clear message
+      document.getElementById('message').style.display = 'none';
+    }
+
+    // Login Form Handler
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      showMessage('Logging in...', '');
+      
+      fetch('/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({ email, password })
+      })
+      .then(response => {
+        console.log('Login Response Status:', response.status);
+        return response.text().then(text => {
+          try {
+            return { json: JSON.parse(text), raw: text, status: response.status };
+          } catch(e) {
+            return { json: null, raw: text, status: response.status };
+          }
+        });
+      })
+      .then(result => {
+        console.log('Login Result:', result);
+        
+        if (result.status === 200 && result.json) {
+          const data = result.json;
+          
+          // Check for success in various formats
+          const isSuccess = (data.message && data.message.includes('successful')) || 
+                           data.token || 
+                           data.user_id ||
+                           (data.email && data.email === email);
+          
+          if (isSuccess) {
+            // Assume it's a doctor since this is doctor portal
+            const doctorName = data.name || data.username || email.split('@')[0];
+            
+            showMessage(`✅ Login successful! Welcome Dr. ${doctorName}`, 'success');
+            
+            // Store doctor info
+            localStorage.setItem('doctor_id', data.user_id || data.id || '1');
+            localStorage.setItem('doctor_name', doctorName);
+            localStorage.setItem('doctor_email', data.email || email);
+            localStorage.setItem('doctor_role', 'doctor');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+              window.location.href = '/admin/doctor_dashboard/';
+            }, 1000);
+            
+          } else {
+            showMessage(`Login failed: ${data.error || data.message || 'Invalid credentials'}`, 'error');
+          }
+        } else {
+          showMessage(`Login failed (Status: ${result.status}): ${result.raw}`, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+        showMessage(`Network error: ${error.message}`, 'error');
+      });
+    });
+
+    // Registration Form Handler
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Validate passwords match
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+      
+      if (password !== confirmPassword) {
+        showMessage('Passwords do not match!', 'error');
+        return;
+      }
+      
+      const doctorData = {
+        name: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        password: password,
+        qualification: document.getElementById('regQualification').value,
+        specialization: document.getElementById('regSpecialization').value,
+        experience: parseInt(document.getElementById('regExperience').value),
+        hospital_name: document.getElementById('regHospital').value,
+        hospital_address: document.getElementById('regHospitalAddress').value,
+        hospital_phone: document.getElementById('regHospitalPhone').value,
+        latitude: "0.000000",  // Default values
+        longitude: "0.000000",
+        role: "hospital_doctor",
+        age: parseInt(document.getElementById('regAge').value),
+        gender: document.getElementById('regGender').value,
+        place: document.getElementById('regPlace').value,
+        available: false,
+        status: "pending"
+      };
+      
+      showMessage('Registering doctor account...', '');
+      
+      fetch('/api/doctor_register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(doctorData)
+      })
+      .then(response => {
+        console.log('Registration Response Status:', response.status);
+        console.log('Registration Response Headers:', response.headers);
+        return response.text().then(text => {
+          console.log('Registration Raw Response:', text);
+          try {
+            return JSON.parse(text);
+          } catch(e) {
+            console.log('Failed to parse JSON:', text);
+            return { raw: text };
+          }
+        });
+      })
+      .then(data => {
+  console.log('Registration Parsed Data:', data);
+        if (data.message && data.message.includes('successful') || data.id) {
+          showMessage(`✅ Registration successful!`, 'success');
+          
+          // Auto-fill login form and switch to login tab
+          document.getElementById('loginEmail').value = doctorData.email;
+          document.getElementById('loginPassword').value = doctorData.password;
+          showTab('login');
+          
+        } else {
+          showMessage(`Error: ${data.error || data.message || 'Registration failed'}`, 'error');
+        }
+      })
+      .catch(error => {
+        showMessage(`Network error: ${error}`, 'error');
+      });
+    });
+
+    function showMessage(text, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.textContent = text;
+      messageDiv.className = "message";
+      messageDiv.style.display = "block";
+      
+      if (type === 'success') {
+        messageDiv.classList.add('success');
+      } else if (type === 'error') {
+        messageDiv.classList.add('error');
+      } else {
+        messageDiv.classList.remove('success', 'error');
+      }
+    }
+
+    function testAPI() {
+      const email = document.getElementById('loginEmail').value || 'd2@gmail.com';
+      const password = document.getElementById('loginPassword').value || 'password123';
+      
+      const debugOutput = document.getElementById('debugOutput');
+      debugOutput.innerHTML = 'Testing API...';
+      debugOutput.style.display = 'block';
+      
+      fetch('/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({ email, password })
+      })
+      .then(response => {
+        return response.text().then(text => {
+          debugOutput.innerHTML = `
+            <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+            <strong>Response:</strong><br>
+            <pre style="background: #0f172a; padding: 10px; border-radius: 6px; overflow: auto; font-size: 10px;">${escapeHtml(text)}</pre>
+          `;
+        });
+      })
+      .catch(error => {
+        debugOutput.innerHTML = `<strong>Error:</strong> ${error.message}`;
+      });
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

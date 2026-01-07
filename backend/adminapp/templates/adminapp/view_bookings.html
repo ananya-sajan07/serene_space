@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serene Space — View Bookings</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background: #1e293b;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      padding: 24px 0;
+      border-right: 1px solid #334155;
+    }
+    .main-content {
+      margin-left: 240px;
+      padding: 24px;
+    }
+    .logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 24px;
+    }
+    .logo h1 {
+      font-size: 20px;
+      color: #60a5fa;
+    }
+    .logo .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .nav-item {
+      display: block;
+      padding: 12px 24px;
+      color: #cbd5e1;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-item:hover {
+      background: #334155;
+      color: #f1f5f9;
+    }
+    .nav-item.active {
+      background: #1e40af;
+      color: white;
+      border-left-color: #60a5fa;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #334155;
+    }
+    .header h2 {
+      font-size: 24px;
+      color: #f1f5f9;
+    }
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-badge {
+      background: #1e40af;
+      color: #dbeafe;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .logout-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .logout-btn:hover {
+      background: #b91c1c;
+    }
+    .table-container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      background: #334155;
+      padding: 16px;
+      text-align: left;
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    td {
+      padding: 16px;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+    tr:hover {
+      background: #2d3748;
+    }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .status-pending {
+      background: #f59e0b;
+      color: #78350f;
+    }
+    .status-confirmed {
+      background: #10b981;
+      color: #064e3b;
+    }
+    .status-cancelled {
+      background: #ef4444;
+      color: #7f1d1d;
+    }
+    .status-completed {
+      background: #3b82f6;
+      color: #1e40af;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <h1>Serene Space</h1>
+      <div class="subtitle">Admin Dashboard</div>
+    </div>
+    <a href="/admin/dashboard/" class="nav-item">Dashboard</a>
+    <a href="/admin/manage_users/" class="nav-item">Manage Users</a>
+    <a href="/admin/manage_doctors/" class="nav-item">Manage Doctors</a>
+    <a href="/admin/manage_books/" class="nav-item">Manage Books</a>
+    <a href="/admin/view_bookings/" class="nav-item active">View Bookings</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <h2>View Bookings</h2>
+      <div class="admin-info">
+        <span>Welcome, Administrator</span>
+        <span class="admin-badge">ADMIN</span>
+        <button class="logout-btn" onclick="window.location.href='/admin/logout/'">Logout</button>
+      </div>
+    </div>
+
+    <!-- Bookings Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Patient</th>
+            <th>Doctor</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Booked On</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for booking in bookings %}
+          <tr>
+            <td>{{ booking.id }}</td>
+            <td>{{ booking.user.name }}</td>
+            <td>Dr. {{ booking.doctor.name }}</td>
+            <td>{{ booking.time_slot.date }}</td>
+            <td>{{ booking.booked_time }}</td>
+            <td>
+              <span class="status-badge status-{{ booking.status }}">
+                {{ booking.status|title }}
+              </span>
+            </td>
+            <td>{{ booking.created_at|date:"d/m/Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+              No bookings found
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

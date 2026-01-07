@@ -214,8 +214,8 @@
     <a href="/admin/dashboard/" class="nav-item">Dashboard</a>
     <a href="/admin/manage_users/" class="nav-item">Manage Users</a>
     <a href="#" class="nav-item active">Manage Doctors</a>
-    <a href="#" class="nav-item">Reports</a>
-    <a href="#" class="nav-item">System Settings</a>
+    <a href="/admin/manage_books/" class="nav-item">Manage Books</a>
+    <a href="/admin/view_bookings/" class="nav-item">View Bookings</a>
   </div>
 
   <!-- Main Content -->
@@ -270,6 +270,7 @@
         <thead>
           <tr>
             <th>Sl. No.</th>
+            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Specialization</th>
@@ -472,6 +473,7 @@
         html += `
           <tr>
             <td>${index + 1}</td>
+            <td>${doctor.id}</td>
             <td>${doctor.name}</td>
             <td>${doctor.email}</td>
             <td>${doctor.specialization || 'N/A'}</td>

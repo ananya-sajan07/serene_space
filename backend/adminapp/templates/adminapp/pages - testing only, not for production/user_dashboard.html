@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Serene Space — User Dashboard (Testing Only)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+    .header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo h1 {
+      font-size: 24px;
+      color: #60a5fa;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: #3b82f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .logout-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .sidebar {
+      width: 250px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-right: 20px;
+      border: 1px solid #334155;
+    }
+    .nav-item {
+      padding: 12px 16px;
+      color: #cbd5e1;
+      text-decoration: none;
+      display: block;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: #334155;
+      color: #60a5fa;
+    }
+    .main-content {
+      flex: 1;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 30px;
+      border: 1px solid #334155;
+    }
+    .section-title {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #f8fafc;
+    }
+    .card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .doctor-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+    }
+    .doctor-card:hover {
+      background: #1e293b;
+    }
+    .doctor-avatar {
+      width: 60px;
+      height: 60px;
+      background: #3b82f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+    .note {
+      color: #94a3b8;
+      font-size: 12px;
+      font-style: italic;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  color: #cbd5e1;
+  margin-bottom: 5px;
+}
+input, textarea {
+  width: 100%;
+  padding: 10px;
+  background: #334155;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  color: white;
+}
+.auth-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <h1>Serene Space</h1>
+      <div class="subtitle">User Dashboard (Testing Only)</div>
+    </div>
+    <div class="user-info">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <div>
+        <div id="userName">User Name</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="sidebar">
+      <div class="nav-item active">👨‍⚕️ Nearby Doctors</div>
+      <div class="nav-item">📅 My Appointments</div>
+      <div class="nav-item">👤 My Profile</div>
+    </div>
+
+    <div class="main-content">
+      <div id="nearbyDoctorsSection">
+        <h2 class="section-title">Available Doctors</h2>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+          <button onclick="loadAllDoctors()" id="allDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px; background: #3b82f6;">All Doctors</button>
+          <button onclick="loadNearbyDoctors()" id="nearbyDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px;">Nearby Doctors</button>
+        </div>
+
+        <div class="card" id="doctorsList">
+          <p>Loading doctors...</p>
+        </div>
+      </div>
+
+      <div id="bookingFormSection" style="display: none;">
+        <h2 class="section-title">Book Appointment</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showDoctorsList()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Doctors</button>
+          </div>
+          <form id="appointmentForm">
+            <div class="form-group">
+              <label>Select Date</label>
+              <input type="date" id="appointmentDate" required>
+              <button type="button" onclick="checkTimeSlots()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 14px;">Check Available Time Slots</button>
+            </div>
+            
+            <div id="timeSlotsContainer" style="display: none;">
+              <div class="form-group">
+                <label>Select Time Slot</label>
+                <div id="availableTimeSlots">
+                  <!-- Time slots will be loaded here -->
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Reason for Visit</label>
+              <textarea id="reason" rows="3" placeholder="Briefly describe what you'd like to discuss"></textarea>
+            </div>
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Book Appointment</button>
+          </form>
+            <div class="form-group">
+              <label>Reason for Visit</label>
+              <textarea id="reason" rows="3" placeholder="Briefly describe what you'd like to discuss"></textarea>
+            </div>
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Book Appointment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    This is a testing page only. In production, users will use the mobile app.
+  </div>
+
+  <script>
+    // Load user data from localStorage
+    window.addEventListener('DOMContentLoaded', function() {
+      const userId = localStorage.getItem('user_id');
+      const userName = localStorage.getItem('user_name');
+        
+      if (!userId) {
+        alert('No user logged in. Redirecting to login...');
+        window.location.href = '/admin/user_auth/';
+        return;
+      }
+
+      document.getElementById('userName').textContent = userName || 'User';
+      document.getElementById('userAvatar').textContent = userName ? userName.charAt(0).toUpperCase() : 'U';
+
+      // Load real doctors
+      loadDoctors();
+    });
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/admin/user_auth/';
+    }
+
+    function loadDoctors(filter = 'all') {
+      const doctorsList = document.querySelector('#doctorsList');
+      doctorsList.innerHTML = '<p>Loading doctors...</p>';
+
+      let apiUrl = '/api/doctors/';
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(doctors => {
+          if (doctors.length === 0) {
+            doctorsList.innerHTML = '<p>No doctors available at the moment.</p>';
+            return;
+          }
+
+          let filteredDoctors = doctors;
+
+          // Apply filters
+          if (filter === 'available') {
+            filteredDoctors = doctors.filter(doctor => 
+              doctor.available && doctor.status === 'approved'
+            );
+          }
+
+          else if (filter === 'nearby') {
+          const userPlace = localStorage.getItem('user_place');
+                  
+          if (!userPlace) {
+            // Ask user for location or show message
+            doctorsList.innerHTML = '<p>Please update your profile with location to find nearby doctors.</p>';
+            return;
+          }
+          
+          filteredDoctors = doctors.filter(doctor => 
+            doctor.place === userPlace && doctor.status === 'approved'
+          );
+  
+          if (filteredDoctors.length === 0) {
+            doctorsList.innerHTML = `<p>No doctors found in ${userPlace}. Try "All Doctors".</p>`;
+            return;
+          }
+        }
+          
+          else {
+            // 'all' - show approved doctors
+            filteredDoctors = doctors.filter(doctor => 
+              doctor.status === 'approved'
+            );
+          }
+
+          if (filteredDoctors.length === 0) {
+            doctorsList.innerHTML = `<p>No ${filter} doctors found.</p>`;
+            return;
+          }
+
+          let doctorsHTML = '';
+          filteredDoctors.forEach(doctor => {
+            doctorsHTML += `
+              <div class="card doctor-card">
+                <div class="doctor-avatar">${doctor.name.charAt(0).toUpperCase()}</div>
+                <div>
+                  <h3>Dr. ${doctor.name}</h3>
+                  <p>${doctor.specialization || 'Healthcare Professional'}</p>
+                  <p>${doctor.hospital_name || ''}</p>
+                  <p>📍 ${doctor.place || 'Location not specified'}</p>
+                  <p>⭐ ${doctor.experience || '0'} years experience</p>
+                  <p>${doctor.available ? '✅ Available now' : '⏳ Not available'}</p>
+                  <button onclick="showBookingForm(${doctor.id}, '${doctor.name}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">Book Appointment</button>
+                </div>
+              </div>
+            `;
+          });
+
+          doctorsList.innerHTML = doctorsHTML;
+        })
+        .catch(error => {
+          console.error('Error loading doctors:', error);
+          doctorsList.innerHTML = '<p>Error loading doctors. Please try again.</p>';
+        });
+    }
+
+    // Filter functions
+    function loadAllDoctors() {
+      loadDoctors('all');
+      updateActiveButton('all');
+    }
+
+    function loadNearbyDoctors() {
+      loadDoctors('nearby');
+      updateActiveButton('nearby');
+    }
+
+    function updateActiveButton(activeFilter) {
+      // Reset all buttons
+      document.getElementById('allDoctorsBtn').style.background = '';
+      document.getElementById('nearbyDoctorsBtn').style.background = '';
+        
+      // Set active button
+      if (activeFilter === 'all') {
+        document.getElementById('allDoctorsBtn').style.background = '#3b82f6';
+      } else if (activeFilter === 'nearby') {
+        document.getElementById('nearbyDoctorsBtn').style.background = '#3b82f6';
+      }
+    }
+
+    function bookAppointment(doctorId) {
+      alert(`Would book appointment with doctor ID: ${doctorId}`);
+      // In next step, we'll implement booking form
+    }
+    let selectedDoctorId = null;
+    let selectedDoctorName = '';
+
+    function showBookingForm(doctorId, doctorName) {
+      selectedDoctorId = doctorId;
+      selectedDoctorName = doctorName;
+    
+      // Show booking form, hide doctors list
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'block';
+    
+      // Update form title
+      document.querySelector('#bookingFormSection .section-title').textContent = `Book Appointment with Dr. ${doctorName}`;
+    
+      // Set minimum date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('appointmentDate').min = today;
+    }
+
+    function showDoctorsList() {
+      // Show doctors list, hide booking form
+      document.getElementById('nearbyDoctorsSection').style.display = 'block';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      selectedDoctorId = null;
+      selectedDoctorName = '';
+    }
+
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+        
+      if (!selectedDoctorId) {
+        alert('No doctor selected. Please go back and select a doctor.');
+        return;
+      }
+      
+      const date = document.getElementById('appointmentDate').value;
+      const time = document.getElementById('appointmentTime').value;
+      const reason = document.getElementById('reason').value;
+      const userId = localStorage.getItem('user_id');
+      
+      
+      if (!date || !time) {
+        alert('Please select date and time');
+        return;
+      }
+      
+      // Validate time format
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(time)) {
+        alert('Please enter time in correct format (HH:MM). Example: 09:00 or 14:30');
+        return;
+      }
+      
+      const bookingData = {
+        time_slot_id: 7,  // Doctor d1's available time slot
+        symptoms: reason || 'General consultation',
+        notes: 'Booking from web portal',
+        doctor_id: parseInt(selectedDoctorId)
+      };
+      console.log('Creating booking:', bookingData);
+      
+      // Show loading
+      const submitBtn = document.querySelector('#appointmentForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Booking...';
+      submitBtn.disabled = true;
+      
+      console.log('Sending booking data:', bookingData);
+      console.log('Full URL:', `/api/doctors/${selectedDoctorId}/bookings/`);
+
+      // Send to real API
+      fetch(`/api/users/${userId}/bookings/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(bookingData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Booking created:', data);
+        alert(`✅ Appointment booked successfully with Dr. ${selectedDoctorName} on ${date} at ${time}`);
+        
+        // Reset form and show doctors list
+        document.getElementById('appointmentForm').reset();
+        showDoctorsList();
+      })
+      .catch(error => {
+        console.error('Booking error:', error);
+        alert(`Error booking appointment: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+    
+    // Add CSRF token function if not already there
+    function getCSRFToken() {
+      const name = 'csrftoken=';
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const ca = decodedCookie.split(';');
+      for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return '';
+    }
+  </script>
+</body>
+</html>

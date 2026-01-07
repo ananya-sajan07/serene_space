@@ -73,32 +73,6 @@ def manage_doctors(request):
         return redirect('admin_login')
     
     return render(request, 'adminapp/manage_doctors.html')
-                          
-
-def doctor_registration_page(request):
-    # Simple Page for Doctors to Register (not Admin Protected)
-    return render(request, 'adminapp/doctor_register.html')
-
-
-def user_registration_page(request):
-    #Simple Page for Users to Register (not Admin Protected)
-    return render(request, 'adminapp/user_register.html')
-
-def user_login_page(request):
-    #Simple Page for Users to Login (not Admin Protected)
-    return render(request, 'adminapp/user_login.html')
-
-def user_edit_page(request):
-    #Simple Page for Users to Edit their Details (not Admin Protected)
-    return render(request, 'adminapp/user_edit.html')
-
-def doctor_login_page(request):
-    #Simple Page for Doctors to Login (not Admin Protected)
-    return render(request, 'adminapp/doctor_login.html')
-
-def doctor_edit_page(request):
-    #Simple Page for Doctors to Edit their Details (not Admin Protected)
-    return render(request, 'adminapp/doctor_edit.html')
 
 def manage_books(request):
     if not request.session.get('admin_logged_in'): #Check if admin is logged in
@@ -119,3 +93,34 @@ def view_book(request, book_id):
         return render(request, 'adminapp/view_book.html', {'book': book})
     except Book.DoesNotExist:
         return render(request, 'adminapp/view_book.html', {'error': 'Book not found'})
+    
+def view_bookings(request):
+    # Check if admin is logged in
+    if not request.session.get('admin_logged_in'):
+        return redirect('admin_login')
+    
+    # Get all bookings from database
+    from core.models import Booking
+    bookings = Booking.objects.all().order_by('-created_at')
+    
+    return render(request, 'adminapp/view_bookings.html', {'bookings': bookings})
+
+
+def user_auth_page(request):
+    # Combined login/registration for users (testing only)
+    return render(request, 'adminapp/pages - testing only, not for production/user_auth.html')
+
+def user_dashboard(request):
+    # Simple dashboard for users (testing only)
+    return render(request, 'adminapp/pages - testing only, not for production/user_dashboard.html')
+
+def doctor_dashboard(request):
+    # Simple dashboard for doctors (testing only)
+    return render(request, 'adminapp/pages - testing only, not for production/doctor_dashboard.html')
+
+def doctor_auth_page(request):
+    # Combined login/registration for doctors (testing only)
+    return render(request, 'adminapp/pages - testing only, not for production/doctor_auth.html')
+
+
+

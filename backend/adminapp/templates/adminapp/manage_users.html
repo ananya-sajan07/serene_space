@@ -222,8 +222,8 @@
     <a href="/admin/dashboard/" class="nav-item">Dashboard</a>
     <a href="#" class="nav-item active">Manage Users</a>
     <a href="/admin/manage_doctors/" class="nav-item">Manage Doctors</a>
-    <a href="#" class="nav-item">Reports</a>
-    <a href="#" class="nav-item">System Settings</a>
+    <a href="/admin/manage_books/" class="nav-item">Manage Books</a>
+    <a href="/admin/view_bookings/" class="nav-item">View Bookings</a>
   </div>
 
   <!-- Main Content -->
@@ -245,6 +245,7 @@
         <thead>
           <tr>
             <th>Sl. No.</th>
+            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Registered</th>
@@ -326,76 +327,77 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
     }
 
     async function loadRecentUsers() {
-  try {
-    const response = await fetch('http://127.0.0.1:8001/api/users/', {
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      const users = await response.json();
-      const usersTable = document.getElementById('usersTable');
-      
-      if (users.length === 0) {
-        usersTable.innerHTML = `
+      try {
+        const response = await fetch('http://127.0.0.1:8001/api/users/', {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const users = await response.json();
+          const usersTable = document.getElementById('usersTable');
+
+          if (users.length === 0) {
+            usersTable.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
+                  No users found
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          // Sort users: Admins first (newest first), then regular users (newest first)
+          const sortedUsers = users.sort((a, b) => {
+            // First sort by admin status (admins first)
+            if (a.is_admin && !b.is_admin) return -1;
+            if (!a.is_admin && b.is_admin) return 1;
+          
+            // If same admin status, sort by created_at (newest first)
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+        
+          // Show ALL users (not just first 5) for Manage Users page
+          let html = '';
+        
+          sortedUsers.forEach((user, index) => {
+            const date = formatDate(user.created_at);
+          
+            html += `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${user.id}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${date}</td>
+                <td>${user.is_admin ? '<span style="color:#60a5fa">Admin</span>' : '<span style="color:#94a3b8">User</span>'}</td>
+                <td>
+                  <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+                  <button class="view-more-btn" onclick="viewUserDetails(${user.id})">View More</button>
+                </td>
+              </tr>
+            `;
+          });
+        
+          usersTable.innerHTML = html;
+
+          // Don't update totalUsers count (that's for dashboard)
+          // document.getElementById('totalUsers').textContent = users.length;
+
+        } else {
+          throw new Error('Failed to fetch users');
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersTable').innerHTML = `
           <tr>
-            <td colspan="6" style="text-align: center; padding: 40px; color: #94a3b8;">
-              No users found
+            <td colspan="6" style="text-align: center; padding: 40px; color: #ef4444;">
+              Error loading users: ${error.message}
             </td>
           </tr>
         `;
-        return;
       }
-      
-      // Sort users: Admins first (newest first), then regular users (newest first)
-      const sortedUsers = users.sort((a, b) => {
-        // First sort by admin status (admins first)
-        if (a.is_admin && !b.is_admin) return -1;
-        if (!a.is_admin && b.is_admin) return 1;
-
-        // If same admin status, sort by created_at (newest first)
-        return new Date(b.created_at) - new Date(a.created_at);
-      });
-
-      // Show ALL users (not just first 5) for Manage Users page
-      let html = '';
-
-      sortedUsers.forEach((user, index) => {
-        const date = formatDate(user.created_at);
-
-        html += `
-          <tr>
-            <td>${index + 1}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${date}</td>
-            <td>${user.is_admin ? '<span style="color:#60a5fa">Admin</span>' : '<span style="color:#94a3b8">User</span>'}</td>
-            <td>
-              <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
-              <button class="view-more-btn" onclick="viewUserDetails(${user.id})">View More</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      usersTable.innerHTML = html;
-      
-      // Don't update totalUsers count (that's for dashboard)
-      // document.getElementById('totalUsers').textContent = users.length;
-      
-    } else {
-      throw new Error('Failed to fetch users');
     }
-  } catch (error) {
-    console.error('Error loading users:', error);
-    document.getElementById('usersTable').innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #ef4444;">
-          Error loading users: ${error.message}
-        </td>
-      </tr>
-    `;
-  }
-}
 
   async function viewUserDetails(userId) {
   try {
@@ -484,36 +486,46 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
       alert(`Edit functionality would open here.\n\nThis would show an edit form with the user's current data.`);
     }
 
-    
+    function getCSRFToken() {
+      const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+      return cookieValue || '';
+    }
 
     async function deleteUser(userId) {
-  if (confirm(`Are you sure you want to delete user ID: ${userId}?`)) {
-    try {
-      showMessage(`Deleting user ${userId}...`, 'success');
-      
-      const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
+      if (confirm(`Are you sure you want to delete user ID: ${userId}?`)) {
+        try {
+          showMessage(`Deleting user ${userId}...`, 'success');
+
+          const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken()
+            }
+          });
+
+          const responseText = await response.text();
+          console.log('DELETE Response:', responseText);
+
+          if (response.ok) {
+            showMessage(`User ${userId} deleted successfully!`, 'success');
+            // Reload the user list
+            setTimeout(() => {
+              loadRecentUsers();
+            }, 1000);
+          } else {
+            throw new Error(`Server responded with ${response.status}: ${responseText}`);
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          showMessage(`Error: ${error.message}`, 'error');
         }
-      });
-      
-      if (response.ok) {
-        showMessage(`User ${userId} deleted successfully!`, 'success');
-        // Reload the user list
-        setTimeout(() => {
-          loadRecentUsers();
-        }, 1000);
-      } else {
-        throw new Error('Failed to delete user');
       }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      showMessage(`Error: ${error.message}`, 'error');
     }
-  }
-}
 
     function showMessage(text, type) {
       const messageDiv = document.getElementById('message');
