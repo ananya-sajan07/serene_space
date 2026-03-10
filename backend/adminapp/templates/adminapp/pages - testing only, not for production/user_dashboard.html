@@ -188,6 +188,7 @@
     <div class="sidebar">
       <div class="nav-item active" onclick="showMainDashboard()"> Find Doctors</div>
       <div class="nav-item" onclick="showAppointments()"> My Appointments</div>
+      <div class="nav-item" onclick="showUserPrescriptions()"> My Prescriptions</div>
       <div class="nav-item" onclick="showADHDAssessment()"> ADHD Assessment</div>
       <div class="nav-item" onclick="showAnxietyAssessment()"> Anxiety Assessment</div>
       <div class="nav-item" onclick="showMoodTracking()"> Mood Tracking</div>
@@ -271,53 +272,43 @@
             </div>
             
             <div class="form-group">
-              <label>How easily distracted are you? (1-10)</label>
+              <label>Do you find yourself easily distracted by things happening around you? (1 = Never, 10 = Always)</label>
               <input type="range" id="easily_distracted" min="1" max="10" value="5" oninput="document.getElementById('distractedValue').textContent = this.value">
               <span id="distractedValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>How often do you forget daily tasks? (1-10)</label>
+              <label>How often do you forget to do important daily tasks (like paying bills, appointments)? (1 = Never, 10 = Always)</label>
               <input type="range" id="forgetful_daily_tasks" min="1" max="10" value="5" oninput="document.getElementById('forgetfulValue').textContent = this.value">
               <span id="forgetfulValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Poor organization skills? (1-10)</label>
+              <label>Do you struggle with keeping your workspace, room, or schedule organized? (1 = Not at all, 10 = Very much)</label>
               <input type="range" id="poor_organization" min="1" max="10" value="5" oninput="document.getElementById('organizationValue').textContent = this.value">
               <span id="organizationValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Difficulty sustaining attention? (1-10)</label>
+              <label>Is it hard for you to focus on one task for a long time without getting bored or distracted? (1 = Easy, 10 = Very hard)</label>
               <input type="range" id="difficulty_sustaining_attention" min="1" max="10" value="5" oninput="document.getElementById('attentionValue').textContent = this.value">
               <span id="attentionValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Restlessness level? (1-10)</label>
+              <label>Do you often feel physically restless or have trouble sitting still? (1 = Never, 10 = Always)</label>
               <input type="range" id="restlessness" min="1" max="10" value="5" oninput="document.getElementById('restlessnessValue').textContent = this.value">
               <span id="restlessnessValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Impulsivity score? (1-10)</label>
+              <label>Do you often act or speak without thinking about the consequences? (1 = Never, 10 = Very often)</label>
               <input type="range" id="impulsivity_score" min="1" max="10" value="5" oninput="document.getElementById('impulsivityValue').textContent = this.value">
               <span id="impulsivityValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Daily screen time (hours)</label>
-              <input type="number" id="screen_time_daily" min="0" max="24" step="0.5" required>
-            </div>
-            
-            <div class="form-group">
-              <label>Phone unlocks per day</label>
-              <input type="number" id="phone_unlocks_per_day" min="0" max="500" required>
-            </div>
-            
-            <div class="form-group">
-              <label>Working memory score (1-10)</label>
+              <label>How good is your ability to remember and use information while doing tasks (like following instructions)? (1 = Very poor, 10 = Excellent)</label>
               <input type="range" id="working_memory_score" min="1" max="10" value="5" oninput="document.getElementById('memoryValue').textContent = this.value">
               <span id="memoryValue">5</span>
             </div>
@@ -337,86 +328,88 @@
             <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
           </div>
           <form id="anxietyForm">
+
             <div class="form-group">
-              <label>Sadness Level (0-10)</label>
+              <label>How often do you feel sad or down? (0 = Never, 10 = Always)</label>
               <input type="range" id="Sadness" min="0" max="10" value="5" oninput="document.getElementById('sadnessValue').textContent = this.value">
               <span id="sadnessValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Euphoric Feelings (0-10)</label>
+              <label>Do you have sudden feelings of extreme happiness or excitement without reason? (0 = Never, 10 = Very often)</label>
               <input type="range" id="Euphoric" min="0" max="10" value="5" oninput="document.getElementById('euphoricValue').textContent = this.value">
               <span id="euphoricValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Exhaustion Level (0-10)</label>
+              <label>Do you often feel physically or mentally exhausted, even after resting? (0 = Never, 10 = Always)</label>
               <input type="range" id="Exhausted" min="0" max="10" value="5" oninput="document.getElementById('exhaustedValue').textContent = this.value">
               <span id="exhaustedValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Sleep Disorder Issues (0-10)</label>
+              <label>Do you have trouble falling asleep, staying asleep, or waking up feeling tired? (0 = Never, 10 = Always)</label>
               <input type="range" id="Sleep dissorder" min="0" max="10" value="5" oninput="document.getElementById('sleepValue').textContent = this.value">
               <span id="sleepValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Mood Swing Frequency (0-10)</label>
+              <label>Do your moods change quickly and unpredictably (from happy to sad to angry)? (0 = Never, 10 = Very often)</label>
               <input type="range" id="Mood Swing" min="0" max="10" value="5" oninput="document.getElementById('moodValue').textContent = this.value">
               <span id="moodValue">5</span>
             </div>
             
-            <div class="form-group">
-              <label>Suicidal Thoughts (0-10)</label>
+            <div class="form-group" style="border-left: 3px solid #dc2626; padding-left: 10px;">
+              <label style="color: #f87171;">Have you had thoughts of ending your life or hurting yourself? (0 = Never, 10 = Often)</label>
               <input type="range" id="Suicidal thoughts" min="0" max="10" value="0" oninput="document.getElementById('suicidalValue').textContent = this.value">
               <span id="suicidalValue">0</span>
+              <small style="color: #f87171; display: block;">If you're having these thoughts, please reach out to a mental health professional or call a crisis helpline immediately.</small>
             </div>
             
             <div class="form-group">
-              <label>Anorxia Symptoms (0-10)</label>
+              <label>Do you have concerns about your eating habits (eating too little, worrying about weight)? (0 = Never, 10 = Very concerned)</label>
               <input type="range" id="Anorxia" min="0" max="10" value="5" oninput="document.getElementById('anorxiaValue').textContent = this.value">
               <span id="anorxiaValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Authority Respect (0-10)</label>
+              <label>Do you find it difficult to follow rules or respect authority figures? (0 = Easy, 10 = Very difficult)</label>
               <input type="range" id="Authority Respect" min="0" max="10" value="5" oninput="document.getElementById('authorityValue').textContent = this.value">
               <span id="authorityValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Try Explanation (0-10)</label>
+              <label>Do you try to explain your actions or justify yourself often? (0 = Never, 10 = Always)</label>
               <input type="range" id="Try-Explanation" min="0" max="10" value="5" oninput="document.getElementById('tryExplanationValue').textContent = this.value">
               <span id="tryExplanationValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Aggressive Response (0-10)</label>
+              <label>Do you react aggressively when someone upsets you? (0 = Never, 10 = Very often)</label>
               <input type="range" id="Aggressive Response" min="0" max="10" value="5" oninput="document.getElementById('aggressiveValue').textContent = this.value">
               <span id="aggressiveValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Ignore & Move-On (0-10)</label>
+              <label>When someone hurts you, can you let it go and move on easily? (0 = Very easy, 10 = Very hard)</label>
               <input type="range" id="Ignore & Move-On" min="0" max="10" value="5" oninput="document.getElementById('ignoreValue').textContent = this.value">
               <span id="ignoreValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Nervous Break-down (0-10)</label>
+              <label>Do you feel like you might have a mental breakdown when things get too stressful? (0 = Never, 10 = Often)</label>
               <input type="range" id="Nervous Break-down" min="0" max="10" value="5" oninput="document.getElementById('nervousValue').textContent = this.value">
               <span id="nervousValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Admit Mistakes (0-10)</label>
+              <label>Is it easy or hard for you to admit when you've made a mistake? (0 = Very easy, 10 = Very hard)</label>
               <input type="range" id="Admit Mistakes" min="0" max="10" value="5" oninput="document.getElementById('admitValue').textContent = this.value">
               <span id="admitValue">5</span>
             </div>
             
             <div class="form-group">
-              <label>Overthinking (0-10)</label>
+              <label>Do you tend to overthink things or worry too much about small matters? (0 = Never, 10 = Always)</label>
               <input type="range" id="Overthinking" min="0" max="10" value="5" oninput="document.getElementById('overthinkingValue').textContent = this.value">
               <span id="overthinkingValue">5</span>
             </div>
@@ -443,6 +436,20 @@
         </div>
       </div>
 
+      <!-- User Prescriptions Section -->
+      <div id="userPrescriptionsSection" style="display: none;">
+        <h2 class="section-title">My Prescriptions</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <div id="userPrescriptionsList">
+            <p>Loading your prescriptions...</p>
+          </div>
+        </div>
+      </div>
+      
       <!-- Mood Tracking Section -->
       <div id="moodSection" style="display: none;">
         <h2 class="section-title">Mood Tracking</h2>
@@ -1613,6 +1620,120 @@
       
       // Load appointments
       loadUserAppointments();
+    }
+
+    function showUserPrescriptions() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      document.getElementById('chatbotSection').style.display = 'none';
+      document.getElementById('userPrescriptionsSection').style.display = 'block';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Load user prescriptions
+      loadUserPrescriptions();
+    }
+
+    function loadUserPrescriptions() {
+      const userId = localStorage.getItem('user_id');
+      const prescriptionsList = document.getElementById('userPrescriptionsList');
+      
+      if (!userId) {
+        prescriptionsList.innerHTML = '<p style="color: #ef4444;">Error: User not logged in</p>';
+        return;
+      }
+      
+      prescriptionsList.innerHTML = '<p>Loading your prescriptions...</p>';
+      
+      fetch(`/api/users/${userId}/prescriptions/`)
+        .then(response => response.json())
+        .then(data => {
+          const prescriptions = data.prescriptions || [];
+          
+          if (prescriptions.length === 0) {
+            prescriptionsList.innerHTML = '<p>No prescriptions found. Prescriptions from your doctor will appear here.</p>';
+            return;
+          }
+          
+          let html = '';
+          prescriptions.forEach(p => {
+            const issuedDate = new Date(p.issued_date).toLocaleDateString();
+            const followUp = p.follow_up_date ? new Date(p.follow_up_date).toLocaleDateString() : 'Not scheduled';
+            
+            // Generate medication list HTML
+            let medsHtml = '<ul style="margin-top: 5px; margin-left: 20px;">';
+            p.medications.forEach(med => {
+            medsHtml += `
+              <li style="margin-bottom: 8px;">
+                <strong>${med.name}</strong><br>
+                <span style="margin-left: 15px; display: block;">
+                  Dosage: ${med.dosage}<br>
+                  When to Take: ${med.times}<br>
+                  With Food: ${med.food_timing}<br>
+                  Duration: ${med.duration}
+                </span>
+              </li>
+            `;
+            });
+            medsHtml += '</ul>';
+            
+            html += `
+              <div class="card" style="margin-bottom: 20px; border-left: 4px solid #10b981;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <h3 style="color: #f8fafc;">Dr. ${p.doctor_name}</h3>
+                  <span style="background: ${p.status === 'active' ? '#10b981' : '#6b7280'}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
+                    ${p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                  </span>
+                </div>
+                
+                <p><strong>Date:</strong> ${issuedDate}</p>
+                <p><strong>Diagnosis:</strong> ${p.diagnosis}</p>
+                
+                <div style="margin-top: 10px;">
+                  <strong>Medications:</strong>
+                  ${medsHtml}
+                </div>
+                
+                ${p.notes ? `<p><strong>Notes:</strong> ${p.notes}</p>` : ''}
+                <p><strong>Follow-up:</strong> ${followUp}</p>
+                
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                  <button onclick="downloadPrescription(${p.id})" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Download PDF</button>
+                </div>
+              </div>
+            `;
+          });
+          
+          prescriptionsList.innerHTML = html;
+        })
+        .catch(error => {
+          console.error('Error loading prescriptions:', error);
+          prescriptionsList.innerHTML = '<p style="color: #ef4444;">Error loading prescriptions. Please try again.</p>';
+        });
+    }
+
+    function downloadPrescription(prescriptionId) {
+      // Open PDF download in new tab
+      window.open(`/api/prescriptions/${prescriptionId}/download/`, '_blank');
     }
 
     function showBooks() {

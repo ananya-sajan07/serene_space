@@ -147,3 +147,37 @@ class AssessmentResult(models.Model):
     
     def __str__(self):
         return f"{self.user.name} - {self.get_assessment_type_display()} - {self.result} ({self.created_at.date()})"
+    
+class Prescription(models.Model):
+    """
+    Prescription issued by doctor after appointment
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='prescriptions')
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='prescriptions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescriptions')
+    
+    # Prescription details
+    diagnosis = models.TextField(help_text="Doctor's diagnosis")
+    medications = models.JSONField(default=list, help_text="List of medications with dosage, frequency, duration")
+    notes = models.TextField(blank=True, null=True, help_text="Additional instructions")
+    
+    # Follow-up
+    follow_up_date = models.DateField(blank=True, null=True, help_text="Recommended follow-up date")
+    is_active = models.BooleanField(default=True)
+    
+    # Metadata
+    issued_date = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    def __str__(self):
+        return f"Prescription for {self.user.name} - Dr. {self.doctor.name} ({self.issued_date.date()})"
+    
+    class Meta:
+        ordering = ['-issued_date']

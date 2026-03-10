@@ -105,3 +105,17 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Ensure user is set properly
         return AssessmentResult.objects.create(**validated_data)
+
+class PrescriptionSerializer(serializers.ModelSerializer):
+    doctor_name = serializers.CharField(source='doctor.name', read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    booking_date = serializers.CharField(source='booking.time_slot.date', read_only=True)
+    
+    class Meta:
+        model = Prescription
+        fields = '__all__'
+        read_only_fields = ['issued_date']
+    
+    def create(self, validated_data):
+        # Ensure all foreign keys are properly set
+        return Prescription.objects.create(**validated_data)

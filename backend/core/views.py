@@ -20,6 +20,15 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 from rest_framework.views import APIView
 
+from django.http import HttpResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from io import BytesIO
+import datetime
 # -----------------------------------------------------------
 # Load Gemini API Key
 # -----------------------------------------------------------
@@ -1085,6 +1094,276 @@ def assessment_detail_api(request, assessment_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# -----------------------------------------------------------
+# Prescription APIs
+# -----------------------------------------------------------
+
+@api_view(['POST'])
+def create_prescription(request):
+    """
+    API for doctor to create prescription for a completed appointment
+    """
+    try:
+        print("="*50)
+        print("CREATE PRESCRIPTION REQUEST RECEIVED")
+        print("Request data:", request.data)
+        
+        booking_id = request.data.get('booking_id')
+        doctor_id = request.data.get('doctor_id')
+        
+        print(f"booking_id: {booking_id}, doctor_id: {doctor_id}")
+        
+        if not booking_id or not doctor_id:
+            print("ERROR: Missing booking_id or doctor_id")
+            return Response({"error": "booking_id and doctor_id are required"}, status=400)
+        
+        # Verify booking exists and belongs to this doctor
+        booking = Booking.objects.get(id=booking_id, doctor_id=doctor_id)
+        print(f"Booking found: {booking}")
+        
+        # Verify booking is completed
+        if booking.status != 'completed':
+            print(f"ERROR: Booking status is {booking.status}, not completed")
+            return Response({"error": "Prescriptions can only be created for completed appointments"}, status=400)
+        
+        # Create prescription data
+        data = {
+            'booking': booking_id,
+            'doctor': doctor_id,
+            'user': booking.user.id,
+            'diagnosis': request.data.get('diagnosis'),
+            'medications': request.data.get('medications', []),
+            'notes': request.data.get('notes', ''),
+            'follow_up_date': request.data.get('follow_up_date'),
+            'status': 'active'
+        }
+        print("Data to save:", data)
+        
+        serializer = PrescriptionSerializer(data=data)
+        if serializer.is_valid():
+            print("Serializer is valid")
+            serializer.save()
+            print("Prescription saved successfully")
+            return Response({
+                "message": "Prescription created successfully",
+                "prescription": serializer.data
+            }, status=201)
+        else:
+            print("Serializer errors:", serializer.errors)
+            return Response(serializer.errors, status=400)
+        
+    except Booking.DoesNotExist:
+        print(f"ERROR: Booking with id {booking_id} not found or not authorized")
+        return Response({"error": "Booking not found or not authorized"}, status=404)
+    except Exception as e:
+        print(f"EXCEPTION: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_prescriptions(request, user_id=None, doctor_id=None):
+    """
+    API to get prescriptions for a user or doctor
+    """
+    try:
+        if user_id:
+            # Get prescriptions for a user
+            prescriptions = Prescription.objects.filter(user_id=user_id).order_by('-issued_date')
+            serializer = PrescriptionSerializer(prescriptions, many=True)
+            return Response({
+                "user_id": user_id,
+                "count": len(prescriptions),
+                "prescriptions": serializer.data
+            })
+        
+        elif doctor_id:
+            # Get prescriptions issued by a doctor
+            prescriptions = Prescription.objects.filter(doctor_id=doctor_id).order_by('-issued_date')
+            serializer = PrescriptionSerializer(prescriptions, many=True)
+            return Response({
+                "doctor_id": doctor_id,
+                "count": len(prescriptions),
+                "prescriptions": serializer.data
+            })
+        
+        else:
+            return Response({"error": "Provide either user_id or doctor_id"}, status=400)
+            
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def prescription_detail_api(request, prescription_id):
+    """
+    API to get, update, or delete a specific prescription
+    """
+    try:
+        prescription = Prescription.objects.get(id=prescription_id)
+        
+        if request.method == 'GET':
+            serializer = PrescriptionSerializer(prescription)
+            return Response(serializer.data)
+            
+        elif request.method == 'PUT':
+            # Only allow updating notes, follow_up_date, status
+            data = {
+                'notes': request.data.get('notes', prescription.notes),
+                'follow_up_date': request.data.get('follow_up_date', prescription.follow_up_date),
+                'status': request.data.get('status', prescription.status)
+            }
+            serializer = PrescriptionSerializer(prescription, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Prescription updated successfully",
+                    "prescription": serializer.data
+                })
+            return Response(serializer.errors, status=400)
+            
+        elif request.method == 'DELETE':
+            prescription.delete()
+            return Response({"message": "Prescription deleted successfully"})
+            
+    except Prescription.DoesNotExist:
+        return Response({"error": f"Prescription with ID {prescription_id} not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+    
+@api_view(['GET'])
+def download_prescription_pdf(request, prescription_id):
+    """
+    Generate and download PDF for a prescription
+    """
+    try:
+        # Get prescription data
+        prescription = Prescription.objects.get(id=prescription_id)
+        
+        # Create a file-like buffer to receive PDF data
+        buffer = BytesIO()
+        
+        # Create the PDF object
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=18)
+        
+        # Container for the 'Flowable' objects
+        elements = []
+        
+        # Get styles
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='CenterTitle',
+                                  parent=styles['Heading1'],
+                                  alignment=TA_CENTER,
+                                  spaceAfter=30))
+        
+        styles.add(ParagraphStyle(name='RightAlign',
+                                  parent=styles['Normal'],
+                                  alignment=TA_CENTER,
+                                  fontSize=10,
+                                  textColor=colors.gray))
+        
+        # Add header
+        elements.append(Paragraph("SERENE SPACE", styles['CenterTitle']))
+        elements.append(Paragraph("Mental Health Wellness Platform", styles['RightAlign']))
+        elements.append(Spacer(1, 0.25*inch))
+        
+        # Add prescription title
+        elements.append(Paragraph(f"Prescription #{prescription.id}", styles['Heading2']))
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Doctor and Patient Info
+        data = [
+            ["Doctor Information", "Patient Information"],
+            [f"Name: Dr. {prescription.doctor.name}", f"Name: {prescription.user.name}"],
+            [f"Specialization: {prescription.doctor.specialization or 'N/A'}", f"Email: {prescription.user.email}"],
+            [f"Phone: {prescription.doctor.hospital_phone or 'N/A'}", f"Phone: {prescription.user.phone or 'N/A'}"],
+        ]
+        
+        table = Table(data, colWidths=[3*inch, 3*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (1, 0), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 0.3*inch))
+        
+        # Prescription details
+        elements.append(Paragraph(f"<b>Date:</b> {prescription.issued_date.strftime('%B %d, %Y')}", styles['Normal']))
+        elements.append(Spacer(1, 0.1*inch))
+        elements.append(Paragraph(f"<b>Diagnosis:</b> {prescription.diagnosis}", styles['Normal']))
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Medications
+        elements.append(Paragraph("<b>PRESCRIBED MEDICATIONS</b>", styles['Heading3']))
+        elements.append(Spacer(1, 0.1*inch))
+        
+        med_data = [["Medication", "Dosage", "When to Take", "With Food", "Duration"]]
+        
+        for med in prescription.medications:
+            med_data.append([
+                med.get('name', 'N/A'),
+                med.get('dosage', 'N/A'),
+                med.get('times', 'As directed'),
+                med.get('food_timing', 'Any Time'),
+                med.get('duration', 'As directed')
+            ])
+        
+        med_table = Table(med_data, colWidths=[1.5*inch, 1*inch, 1.7*inch, 1*inch, 1*inch])
+        med_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgreen),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(med_table)
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Notes
+        if prescription.notes:
+            elements.append(Paragraph("<b>Additional Notes:</b>", styles['Heading4']))
+            elements.append(Paragraph(prescription.notes, styles['Normal']))
+            elements.append(Spacer(1, 0.2*inch))
+        
+        # Follow-up
+        if prescription.follow_up_date:
+            elements.append(Paragraph(f"<b>Follow-up Date:</b> {prescription.follow_up_date.strftime('%B %d, %Y')}", styles['Normal']))
+            elements.append(Spacer(1, 0.2*inch))
+        
+        # Footer
+        elements.append(Spacer(1, 0.5*inch))
+        elements.append(Paragraph("This is a computer-generated prescription. No signature required.", 
+                                  ParagraphStyle(name='Footer', parent=styles['Normal'], alignment=TA_CENTER, fontSize=8, textColor=colors.gray)))
+        
+        # Build PDF
+        doc.build(elements)
+        
+        # Get the value of the BytesIO buffer
+        pdf = buffer.getvalue()
+        buffer.close()
+        
+        # Create response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="prescription_{prescription.id}.pdf"'
+        response.write(pdf)
+        
+        return response
+        
+    except Prescription.DoesNotExist:
+        return Response({"error": "Prescription not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
 # -----------------------------------------------------------
 # Mental Health Chatbot API
 # -----------------------------------------------------------

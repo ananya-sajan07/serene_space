@@ -35,6 +35,13 @@ urlpatterns = [
     path('users/<int:user_id>/assessments/', get_user_assessments_api, name='user_assessments'),
     path('assessments/<int:assessment_id>/', assessment_detail_api, name='assessment_detail'), 
     path('save-assessment/', save_assessment_result, name='save_assessment'),
+    # Prescription URLs
+    path('prescriptions/create/', create_prescription, name='create_prescription'),
+    path('users/<int:user_id>/prescriptions/', get_prescriptions, name='user_prescriptions'),
+    path('doctors/<int:doctor_id>/prescriptions/', get_prescriptions, name='doctor_prescriptions'),
+    path('prescriptions/<int:prescription_id>/', prescription_detail_api, name='prescription_detail'),
+    # Prescription PDF download
+    path('prescriptions/<int:prescription_id>/download/', download_prescription_pdf, name='download_prescription_pdf'),
 ]
 
 

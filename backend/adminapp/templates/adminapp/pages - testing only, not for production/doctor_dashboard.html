@@ -253,6 +253,7 @@
       <div class="nav-item" onclick="showSection('appointments')"> Appointments</div>
       <div class="nav-item" onclick="showSection('timeSlots')"> Manage Time Slots</div>
       <div class="nav-item" onclick="showSection('patients')"> My Patients</div>
+      <div class="nav-item" onclick="showSection('prescriptions')"> Prescriptions</div>
       <div class="nav-item" onclick="showSection('profile')"> My Profile</div>
     </div>
 
@@ -344,6 +345,31 @@
         </div>
       </div>
 
+      <!-- Prescriptions Section -->
+      <div id="prescriptionsSection" style="display: none;">
+        <h2 class="section-title">My Prescriptions</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="alert('Test button works!')" style="background: #ff0000; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 10px;">Test JavaScript</button>
+            <button onclick="showSection('dashboard')" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <!-- Completed Appointments List (to issue prescriptions) -->
+          <div style="margin-bottom: 30px; padding: 20px; background: #1e293b; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px;">Completed Appointments</h3>
+            <div id="completedAppointmentsList">
+              <p>Loading completed appointments...</p>
+            </div>
+          </div>
+          
+          <!-- Issued Prescriptions -->
+          <h3>Issued Prescriptions</h3>
+          <div id="doctorPrescriptionsList">
+            <p>Loading prescriptions...</p>
+          </div>
+        </div>
+      </div>
+            
       <!-- Profile Section -->
       <div id="profileSection" style="display: none;">
         <h2 class="section-title">My Profile</h2>
@@ -377,6 +403,11 @@
         }
       }
       return '';
+    }
+
+    function viewPrescription(prescriptionId) {
+      alert("View Prescription #" + prescriptionId);
+      // In future, this could open a detailed view
     }
 
     // Load doctor data from localStorage
@@ -423,6 +454,10 @@
         loadPatients();
       } else if (sectionId === 'profile') {
         loadProfile();
+      } else if (sectionId === 'prescriptions') {
+        loadDoctorPrescriptions();
+      } else if (sectionId === 'prescriptions') {
+        loadDoctorPrescriptions();
       }
     }
 
@@ -814,6 +849,313 @@
           console.error('Error loading patients:', error);
           patientsList.innerHTML = '<p>Unable to load patient list.</p>';
         });
+    }
+
+    function loadDoctorPrescriptions() {
+      const doctorId = localStorage.getItem('doctor_id');
+      const completedList = document.getElementById('completedAppointmentsList');
+      const prescriptionsList = document.getElementById('doctorPrescriptionsList');
+      
+      if (!doctorId) return;
+      
+      // Load completed appointments
+      completedList.innerHTML = '<p>Loading completed appointments...</p>';
+      
+      fetch(`/api/doctors/${doctorId}/bookings/`)
+        .then(response => response.json())
+        .then(data => {
+          const bookings = data.bookings || [];
+          
+          // Filter completed appointments that don't have prescriptions yet
+          const completedAppointments = bookings.filter(b => 
+            b.status === 'completed' 
+          );
+          
+          if (completedAppointments.length === 0) {
+            completedList.innerHTML = '<p>No completed appointments available.</p>';
+          } else {
+            let html = '';
+            completedAppointments.forEach(apt => {
+              html += `
+                <div class="appointment-card" style="margin-bottom: 10px;">
+                  <div>
+                    <p><strong>Patient:</strong> ${apt.user_name || 'Patient'}</p>
+                    <p><strong>Date:</strong> ${apt.time_slot_details?.date || 'N/A'}</p>
+                    <p><strong>Symptoms:</strong> ${apt.symptoms || 'None'}</p>
+                  </div>
+                  <button onclick="showPrescriptionForm(${apt.id}, ${apt.user}, '${apt.user_name || 'Patient'}')" 
+                          style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                    Issue Prescription
+                  </button>
+                </div>
+              `;
+            });
+            completedList.innerHTML = html;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading completed appointments:', error);
+          completedList.innerHTML = '<p>Error loading appointments.</p>';
+        });
+      
+      // Load issued prescriptions
+      prescriptionsList.innerHTML = '<p>Loading prescriptions...</p>';
+      
+      fetch(`/api/doctors/${doctorId}/prescriptions/`)
+        .then(response => response.json())
+        .then(data => {
+          console.log("Prescriptions data received:", data);
+          const prescriptions = data.prescriptions || [];
+          
+          if (prescriptions.length === 0) {
+            prescriptionsList.innerHTML = '<p>No prescriptions issued yet.</p>';
+            return;
+          }
+          
+          let html = '<p>Found ' + prescriptions.length + ' prescriptions:</p>';
+          prescriptions.forEach(p => {
+            const date = new Date(p.issued_date).toLocaleDateString();
+            html += '<div style="background: #1e293b; padding: 10px; margin-bottom: 10px; border-radius: 6px;">';
+            html += '<p><strong>Patient:</strong> ' + p.user_name + '</p>';
+            html += '<p><strong>Date:</strong> ' + date + '</p>';
+            html += '<p><strong>Diagnosis:</strong> ' + p.diagnosis + '</p>';
+            html += '<button onclick="alert(\'Viewing prescription ' + p.id + '\')" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">View</button>';
+            html += '</div>';
+          });
+          prescriptionsList.innerHTML = html;
+          prescriptionsList.innerHTML = html;
+        })
+        .catch(error => {
+          console.error('Error loading prescriptions:', error);
+          prescriptionsList.innerHTML = '<p>Error loading prescriptions.</p>';
+        });
+    }
+    
+    function showPrescriptionForm(bookingId, userId, patientName) {
+      // Hide the prescriptions list and show form
+      document.getElementById('completedAppointmentsList').style.display = 'none';
+      document.getElementById('doctorPrescriptionsList').style.display = 'none';
+      
+      // Create prescription form
+      const prescriptionsSection = document.getElementById('prescriptionsSection');
+      const card = prescriptionsSection.querySelector('.card');
+      
+      // Remove any existing form
+      const existingForm = document.getElementById('prescriptionFormContainer');
+      if (existingForm) existingForm.remove();
+      
+      const formContainer = document.createElement('div');
+      formContainer.id = 'prescriptionFormContainer';
+      formContainer.innerHTML = `
+        <div style="margin-top: 20px; padding: 20px; background: #1e293b; border-radius: 8px;">
+          <h3 style="margin-bottom: 15px;">Issue Prescription for ${patientName}</h3>
+          <form id="prescriptionForm">
+            <div class="form-group">
+              <label>Diagnosis *</label>
+              <textarea id="diagnosis" rows="2" placeholder="Enter your diagnosis..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>Medications</label>
+              <div id="medicationsList">
+                <div class="medication-item" style="margin-bottom: 10px; padding: 10px; background: #0f172a; border-radius: 6px;">
+                  <input type="text" class="med-name" placeholder="Medication name" style="width: 100%; margin-bottom: 5px;">
+                  <div style="margin-bottom: 10px;">
+                    <input type="text" class="med-dosage" placeholder="Dosage (e.g., 10mg)" style="width: 100%; margin-bottom: 5px;">
+                  </div>
+                  
+                  <div style="margin-bottom: 10px;">
+                    <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">Time of Day:</label>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                      <label><input type="checkbox" class="med-morning" value="Morning"> Morning</label>
+                      <label><input type="checkbox" class="med-noon" value="Noon"> Noon</label>
+                      <label><input type="checkbox" class="med-evening" value="Evening"> Evening</label>
+                      <label><input type="checkbox" class="med-night" value="Night"> Night</label>
+                    </div>
+                  </div>
+                  
+                  <div style="margin-bottom: 10px;">
+                    <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">With Food:</label>
+                    <div style="display: flex; gap: 20px;">
+                      <label><input type="radio" name="food-timing" class="med-food-before" value="Before Food"> Before Food</label>
+                      <label><input type="radio" name="food-timing" class="med-food-after" value="After Food"> After Food</label>
+                      <label><input type="radio" name="food-timing" class="med-food-any" value="Any Time" checked> Any Time</label>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <input type="text" class="med-duration" placeholder="Duration (e.g., 7 days)" style="width: 100%;">
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="addMedicationField()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 5px;">+ Add Another Medication</button>
+            </div>
+            
+            <div class="form-group">
+              <label>Additional Notes</label>
+              <textarea id="prescriptionNotes" rows="2" placeholder="Any special instructions..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>Follow-up Date (optional)</label>
+              <input type="date" id="followUpDate">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+              <button type="submit" class="submit-btn">Issue Prescription</button>
+              <button type="button" onclick="cancelPrescriptionForm()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer;">Cancel</button>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      card.appendChild(formContainer);
+      
+      // Store bookingId for form submission
+      formContainer.dataset.bookingId = bookingId;
+      formContainer.dataset.userId = userId;
+      
+      // Add form submit handler
+      document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitPrescription(bookingId, userId);
+      });
+    }
+
+    function addMedicationField() {
+      const medicationsList = document.getElementById('medicationsList');
+      const newItem = document.createElement('div');
+      newItem.className = 'medication-item';
+      newItem.style = 'margin-bottom: 10px; padding: 10px; background: #0f172a; border-radius: 6px;';
+      newItem.innerHTML = `
+        <input type="text" class="med-name" placeholder="Medication name" style="width: 100%; margin-bottom: 5px;">
+        
+        <div style="margin-bottom: 10px;">
+          <input type="text" class="med-dosage" placeholder="Dosage (e.g., 10mg)" style="width: 100%; margin-bottom: 5px;">
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">Time of Day:</label>
+          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <label><input type="checkbox" class="med-morning" value="Morning"> Morning</label>
+            <label><input type="checkbox" class="med-noon" value="Noon"> Noon</label>
+            <label><input type="checkbox" class="med-evening" value="Evening"> Evening</label>
+            <label><input type="checkbox" class="med-night" value="Night"> Night</label>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">With Food:</label>
+          <div style="display: flex; gap: 20px;">
+            <label><input type="radio" name="food-timing-${Date.now()}" class="med-food-before" value="Before Food"> Before Food</label>
+            <label><input type="radio" name="food-timing-${Date.now()}" class="med-food-after" value="After Food"> After Food</label>
+            <label><input type="radio" name="food-timing-${Date.now()}" class="med-food-any" value="Any Time" checked> Any Time</label>
+          </div>
+        </div>
+        
+        <div>
+          <input type="text" class="med-duration" placeholder="Duration (e.g., 7 days)" style="width: 100%;">
+        </div>
+      `;
+      medicationsList.appendChild(newItem);
+    }
+
+    function cancelPrescriptionForm() {
+      document.getElementById('prescriptionFormContainer').remove();
+      document.getElementById('completedAppointmentsList').style.display = 'block';
+      document.getElementById('doctorPrescriptionsList').style.display = 'block';
+    }
+
+    function submitPrescription(bookingId, userId) {
+      // Collect medication data
+      const medicationItems = document.querySelectorAll('.medication-item');
+      const medications = [];
+      
+      medicationItems.forEach(item => {
+        const name = item.querySelector('.med-name').value.trim();
+        const dosage = item.querySelector('.med-dosage').value.trim();
+        const duration = item.querySelector('.med-duration').value.trim();
+        
+        // Collect selected times
+        const times = [];
+        if (item.querySelector('.med-morning')?.checked) times.push('Morning');
+        if (item.querySelector('.med-noon')?.checked) times.push('Noon');
+        if (item.querySelector('.med-evening')?.checked) times.push('Evening');
+        if (item.querySelector('.med-night')?.checked) times.push('Night');
+        
+        // Collect food timing
+        let foodTiming = 'Any Time';
+        if (item.querySelector('.med-food-before')?.checked) foodTiming = 'Before Food';
+        else if (item.querySelector('.med-food-after')?.checked) foodTiming = 'After Food';
+        
+        if (name || dosage || times.length > 0 || duration) {
+          medications.push({
+            name: name || 'Not specified',
+            dosage: dosage || 'As directed',
+            times: times.length > 0 ? times.join(', ') : 'As directed',
+            food_timing: foodTiming,
+            duration: duration || 'As directed'
+          });
+        }
+      });
+      
+      const diagnosis = document.getElementById('diagnosis').value;
+      const notes = document.getElementById('prescriptionNotes').value;
+      const followUpDate = document.getElementById('followUpDate').value;
+      const doctorId = localStorage.getItem('doctor_id');
+      
+      if (!diagnosis) {
+        alert('Please enter diagnosis');
+        return;
+      }
+      
+      if (medications.length === 0) {
+        alert('Please add at least one medication');
+        return;
+      }
+      
+      const prescriptionData = {
+        booking_id: parseInt(bookingId),
+        doctor_id: parseInt(doctorId),
+        diagnosis: diagnosis,
+        medications: medications,
+        notes: notes,
+        follow_up_date: followUpDate || null
+      };
+      
+      // Show loading
+      const submitBtn = document.querySelector('#prescriptionForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      
+      fetch('/api/prescriptions/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(prescriptionData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Prescription issued successfully!');
+        cancelPrescriptionForm();
+        loadDoctorPrescriptions(); // Reload the prescriptions list
+      })
+      .catch(error => {
+        console.error('Error issuing prescription:', error);
+        alert(`Error: ${error.message}`);
+      })
+      .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
     }
 
     function loadProfile() 
