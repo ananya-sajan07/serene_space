@@ -2,9 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import login, register, doctor_register, predict_adhd_api, predict_anxiety_api, update_doctor_availability, add_book_api, book_detail_api, get_books_api, get_book_detail_api
-from .views import doctor_time_slots_api, time_slot_detail_api, find_nearby_doctors_api, find_nearby_doctors_by_user_api,doctor_feedback_api, booking_api, update_booking_status_api
-from .views import UserViewSet, DoctorViewSet, MoodLogViewSet
+from .views import *
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -31,7 +29,12 @@ urlpatterns = [
     path('user/books/', get_books_api, name='user_books'),
     path('user/books/<int:book_id>/', get_book_detail_api, name='user_book_detail'),
     path('doctors/<int:doctor_id>/time_slots/', doctor_time_slots_api, name='doctor_time_slots'),
-    path('time_slots/<int:time_slot_id>/', time_slot_detail_api, name='time_slot_detail'),    
+    path('time_slots/<int:time_slot_id>/', time_slot_detail_api, name='time_slot_detail'),   
+    path('chat/', MentalHealthChatAPIView.as_view(), name='mental_health_chat'),
+    path('chat/test/', ChatbotTestAPIView.as_view(), name='chatbot_test'),
+    path('users/<int:user_id>/assessments/', get_user_assessments_api, name='user_assessments'),
+    path('assessments/<int:assessment_id>/', assessment_detail_api, name='assessment_detail'), 
+    path('save-assessment/', save_assessment_result, name='save_assessment'),
 ]
 
 

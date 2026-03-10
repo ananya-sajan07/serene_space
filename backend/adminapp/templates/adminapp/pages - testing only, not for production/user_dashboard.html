@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Serene Space — User Dashboard (Testing Only)</title>
+  <title>Serene Space — User Dashboard (Bookings, Health Assessments, Books, Profile)</title>
   <style>
     * {
       margin: 0;
@@ -128,38 +128,52 @@
       margin-top: 20px;
       text-align: center;
     }
+
     .form-group {
-  margin-bottom: 15px;
-}
-label {
-  display: block;
-  color: #cbd5e1;
-  margin-bottom: 5px;
-}
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  background: #334155;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  color: white;
-}
-.auth-btn {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-}
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      background: #334155;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: white;
+    }
+    .auth-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    /* Book category buttons – force green background */
+    #booksSection button {
+      background-color: #10b981; /* green */
+      color: #ffffff;
+      border: none;
+    }
+
+    /* Optional hover */
+    #booksSection button:hover {
+      background-color: #059669;
+    }
+
   </style>
 </head>
 <body>
   <div class="header">
     <div class="logo">
       <h1>Serene Space</h1>
-      <div class="subtitle">User Dashboard (Testing Only)</div>
+      <div class="subtitle">User Dashboard</div>
     </div>
     <div class="user-info">
       <div class="user-avatar" id="userAvatar">U</div>
@@ -172,9 +186,15 @@ input, textarea {
 
   <div class="container">
     <div class="sidebar">
-      <div class="nav-item active">👨‍⚕️ Nearby Doctors</div>
-      <div class="nav-item">📅 My Appointments</div>
-      <div class="nav-item">👤 My Profile</div>
+      <div class="nav-item active" onclick="showMainDashboard()"> Find Doctors</div>
+      <div class="nav-item" onclick="showAppointments()"> My Appointments</div>
+      <div class="nav-item" onclick="showADHDAssessment()"> ADHD Assessment</div>
+      <div class="nav-item" onclick="showAnxietyAssessment()"> Anxiety Assessment</div>
+      <div class="nav-item" onclick="showMoodTracking()"> Mood Tracking</div>
+      <div class="nav-item" onclick="showChatbot()"> SereneBot</div>
+      <div class="nav-item" onclick="showBooks()"> Books</div>
+      <div class="nav-item" onclick="showProfile()"> My Profile</div>
+            
     </div>
 
     <div class="main-content">
@@ -182,8 +202,8 @@ input, textarea {
         <h2 class="section-title">Available Doctors</h2>
 
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-          <button onclick="loadAllDoctors()" id="allDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px; background: #3b82f6;">All Doctors</button>
-          <button onclick="loadNearbyDoctors()" id="nearbyDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px;">Nearby Doctors</button>
+          <button onclick="loadDoctors('all')" id="allDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px; background: #3b82f6;">All Doctors</button>
+          <button onclick="loadDoctors('nearby')" id="nearbyDoctorsBtn" class="auth-btn" style="width: auto; padding: 8px 16px;">Nearby Doctors</button>
         </div>
 
         <div class="card" id="doctorsList">
@@ -195,7 +215,7 @@ input, textarea {
         <h2 class="section-title">Book Appointment</h2>
         <div class="card">
           <div style="margin-bottom: 15px;">
-            <button onclick="showDoctorsList()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Doctors</button>
+           <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
           </div>
           <form id="appointmentForm">
             <div class="form-group">
@@ -219,23 +239,377 @@ input, textarea {
             </div>
             <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Book Appointment</button>
           </form>
-            <div class="form-group">
-              <label>Reason for Visit</label>
-              <textarea id="reason" rows="3" placeholder="Briefly describe what you'd like to discuss"></textarea>
-            </div>
-            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Book Appointment</button>
-          </form>
         </div>
+      </div>
+      
+      <!-- ADHD Assessment Section -->
+      <div id="adhdaSection" style="display: none;">
+        <h2 class="section-title">ADHD Assessment</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          <form id="adhdForm">
+            <div class="form-group">
+              <label>Age</label>
+              <input type="number" id="age" min="1" max="120" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="gender" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Average Sleep Hours (per night)</label>
+              <input type="number" id="sleep_hours_avg" min="0" max="24" step="0.5" required>
+            </div>
+            
+            <div class="form-group">
+              <label>How easily distracted are you? (1-10)</label>
+              <input type="range" id="easily_distracted" min="1" max="10" value="5" oninput="document.getElementById('distractedValue').textContent = this.value">
+              <span id="distractedValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>How often do you forget daily tasks? (1-10)</label>
+              <input type="range" id="forgetful_daily_tasks" min="1" max="10" value="5" oninput="document.getElementById('forgetfulValue').textContent = this.value">
+              <span id="forgetfulValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Poor organization skills? (1-10)</label>
+              <input type="range" id="poor_organization" min="1" max="10" value="5" oninput="document.getElementById('organizationValue').textContent = this.value">
+              <span id="organizationValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Difficulty sustaining attention? (1-10)</label>
+              <input type="range" id="difficulty_sustaining_attention" min="1" max="10" value="5" oninput="document.getElementById('attentionValue').textContent = this.value">
+              <span id="attentionValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Restlessness level? (1-10)</label>
+              <input type="range" id="restlessness" min="1" max="10" value="5" oninput="document.getElementById('restlessnessValue').textContent = this.value">
+              <span id="restlessnessValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Impulsivity score? (1-10)</label>
+              <input type="range" id="impulsivity_score" min="1" max="10" value="5" oninput="document.getElementById('impulsivityValue').textContent = this.value">
+              <span id="impulsivityValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Daily screen time (hours)</label>
+              <input type="number" id="screen_time_daily" min="0" max="24" step="0.5" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Phone unlocks per day</label>
+              <input type="number" id="phone_unlocks_per_day" min="0" max="500" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Working memory score (1-10)</label>
+              <input type="range" id="working_memory_score" min="1" max="10" value="5" oninput="document.getElementById('memoryValue').textContent = this.value">
+              <span id="memoryValue">5</span>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Assess ADHD Risk</button>
+
+          </form>
+          <div id="adhdResults" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+
+      <!-- Anxiety Assessment Section -->
+      <div id="anxietySection" style="display: none;">
+        <h2 class="section-title">Anxiety Assessment</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          <form id="anxietyForm">
+            <div class="form-group">
+              <label>Sadness Level (0-10)</label>
+              <input type="range" id="Sadness" min="0" max="10" value="5" oninput="document.getElementById('sadnessValue').textContent = this.value">
+              <span id="sadnessValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Euphoric Feelings (0-10)</label>
+              <input type="range" id="Euphoric" min="0" max="10" value="5" oninput="document.getElementById('euphoricValue').textContent = this.value">
+              <span id="euphoricValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Exhaustion Level (0-10)</label>
+              <input type="range" id="Exhausted" min="0" max="10" value="5" oninput="document.getElementById('exhaustedValue').textContent = this.value">
+              <span id="exhaustedValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Sleep Disorder Issues (0-10)</label>
+              <input type="range" id="Sleep dissorder" min="0" max="10" value="5" oninput="document.getElementById('sleepValue').textContent = this.value">
+              <span id="sleepValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Mood Swing Frequency (0-10)</label>
+              <input type="range" id="Mood Swing" min="0" max="10" value="5" oninput="document.getElementById('moodValue').textContent = this.value">
+              <span id="moodValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Suicidal Thoughts (0-10)</label>
+              <input type="range" id="Suicidal thoughts" min="0" max="10" value="0" oninput="document.getElementById('suicidalValue').textContent = this.value">
+              <span id="suicidalValue">0</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Anorxia Symptoms (0-10)</label>
+              <input type="range" id="Anorxia" min="0" max="10" value="5" oninput="document.getElementById('anorxiaValue').textContent = this.value">
+              <span id="anorxiaValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Authority Respect (0-10)</label>
+              <input type="range" id="Authority Respect" min="0" max="10" value="5" oninput="document.getElementById('authorityValue').textContent = this.value">
+              <span id="authorityValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Try Explanation (0-10)</label>
+              <input type="range" id="Try-Explanation" min="0" max="10" value="5" oninput="document.getElementById('tryExplanationValue').textContent = this.value">
+              <span id="tryExplanationValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Aggressive Response (0-10)</label>
+              <input type="range" id="Aggressive Response" min="0" max="10" value="5" oninput="document.getElementById('aggressiveValue').textContent = this.value">
+              <span id="aggressiveValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Ignore & Move-On (0-10)</label>
+              <input type="range" id="Ignore & Move-On" min="0" max="10" value="5" oninput="document.getElementById('ignoreValue').textContent = this.value">
+              <span id="ignoreValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Nervous Break-down (0-10)</label>
+              <input type="range" id="Nervous Break-down" min="0" max="10" value="5" oninput="document.getElementById('nervousValue').textContent = this.value">
+              <span id="nervousValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Admit Mistakes (0-10)</label>
+              <input type="range" id="Admit Mistakes" min="0" max="10" value="5" oninput="document.getElementById('admitValue').textContent = this.value">
+              <span id="admitValue">5</span>
+            </div>
+            
+            <div class="form-group">
+              <label>Overthinking (0-10)</label>
+              <input type="range" id="Overthinking" min="0" max="10" value="5" oninput="document.getElementById('overthinkingValue').textContent = this.value">
+              <span id="overthinkingValue">5</span>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Assess Anxiety Level</button>
+          </form>
+          
+          <!-- Results will appear here -->
+          <div id="anxietyResults" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+
+      <!-- Appointments Section -->
+      <div id="appointmentsSection" style="display: none;">
+        <h2 class="section-title">My Appointments</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <div id="appointmentsList">
+            <p>Loading appointments...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mood Tracking Section -->
+      <div id="moodSection" style="display: none;">
+        <h2 class="section-title">Mood Tracking</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <!-- Log Mood Form -->
+          <div style="margin-bottom: 30px; padding: 20px; background: #1e293b; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px;">How are you feeling today?</h3>
+            <form id="moodForm">
+              <div class="form-group">
+                <label>Select Mood</label>
+                <select id="moodSelect" required>
+                  <option value="">Select your mood</option>
+                  <option value="Happy">😊 Happy</option>
+                  <option value="Sad">😢 Sad</option>
+                  <option value="Stressed">😰 Stressed</option>
+                  <option value="Calm">😌 Calm</option>
+                  <option value="Anxious">😟 Anxious</option>
+                  <option value="Energetic">⚡ Energetic</option>
+                  <option value="Tired">😴 Tired</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Notes (optional)</label>
+                <textarea id="moodNotes" rows="2" placeholder="What's on your mind?"></textarea>
+              </div>
+              <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Log Mood</button>
+            </form>
+          </div>
+          
+          <!-- Mood History -->
+          <h3>Your Mood History</h3><br>
+          <div id="moodHistory">
+            <p>Loading mood history...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chatbot Section -->
+      <div id="chatbotSection" style="display: none;">
+        <h2 class="section-title">SereneBot - Mental Health Assistant</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <!-- Chat Interface -->
+          <div style="height: 400px; display: flex; flex-direction: column; background: #1e293b; border-radius: 8px; overflow: hidden;">
+            <!-- Chat Messages Area -->
+            <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+              <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <div style="width: 35px; height: 35px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+                <div style="background: #0f172a; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 80%;">
+                  <p style="color: #cbd5e1;">Hello! I'm SereneBot, your mental health assistant. How are you feeling today?</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div style="padding: 15px; background: #0f172a; border-top: 1px solid #334155;">
+              <form id="chatForm" style="display: flex; gap: 10px;">
+                <input type="text" id="chatInput" placeholder="Type your message..." style="flex: 1; padding: 12px; background: #334155; border: 1px solid #475569; border-radius: 24px; color: white;" required>
+                <button type="submit" style="background: #10b981; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">➤</button>
+              </form>
+              <p style="color: #94a3b8; font-size: 11px; margin-top: 8px; text-align: center;">SereneBot is for informational purposes only. Not a substitute for professional medical advice.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Books Section -->
+      <div id="booksSection" style="display: none;">
+        <h2 class="section-title">Mental Health Books</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+
+          <!-- Category Filters -->
+          <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="loadBooks('all')" id="allBooksBtn" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">All Books</button>
+            <button onclick="loadBooks('adhd')" id="adhdBooksBtn" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">ADHD</button>
+            <button onclick="loadBooks('anxiety')" id="anxietyBooksBtn" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Anxiety</button>
+            <button onclick="loadBooks('depression')" id="depressionBooksBtn" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Depression</button>
+            <button onclick="loadBooks('general')" id="generalBooksBtn" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">General</button>
+          </div>
+          
+          <div id="booksList">
+            <p>Loading books...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div id="reviewsSection" style="display: none;">
+        <h2 class="section-title" id="reviewsDoctorName">Reviews</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="hideReviews()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Doctors</button>
+          </div>
+          
+          <!-- Add Review Form -->
+          <div style="margin-bottom: 30px; padding: 20px; background: #1e293b; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px;">Write a Review</h3>
+            <form id="reviewForm">
+              <div class="form-group">
+                <label>Rating</label>
+                <select id="reviewRating" required>
+                  <option value="">Select Rating</option>
+                  <option value="5">5 - Excellent</option>
+                  <option value="4">4 - Very Good</option>
+                  <option value="3">3 - Good</option>
+                  <option value="2">2 - Fair</option>
+                  <option value="1">1 - Poor</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Your Review</label>
+                <textarea id="reviewComment" rows="3" placeholder="Share your experience with this doctor..." required></textarea>
+              </div>
+              <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Submit Review</button>
+            </form>
+          </div>
+          
+          <!-- Existing Reviews List -->
+          <h3>Patient Reviews</h3>
+          <div id="reviewsList">
+            <p>Loading reviews...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Reviews Section -->
+      <div id="myReviewsSection" style="display: none;">
+        <h2 class="section-title">My Reviews</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showProfile()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Profile</button>
+          </div>
+          
+          <div id="myReviewsList">
+            <p>Loading your reviews...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Profile Section -->
+      <div id="profileSection" style="display: none;">
+        <h2 class="section-title">My Profile</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
+          </div>
+          
+          <div id="profileInfo">
+            <p>Loading profile information...</p>
+          </div>
+        </div>
+      
       </div>
     </div>
   </div>
 
-  <div class="note">
-    This is a testing page only. In production, users will use the mobile app.
-  </div>
-
   <script>
-    // Load user data from localStorage
     window.addEventListener('DOMContentLoaded', function() {
       const userId = localStorage.getItem('user_id');
       const userName = localStorage.getItem('user_name');
@@ -249,103 +623,231 @@ input, textarea {
       document.getElementById('userName').textContent = userName || 'User';
       document.getElementById('userAvatar').textContent = userName ? userName.charAt(0).toUpperCase() : 'U';
 
+      // Ensure appointments section is hidden on load
+      document.getElementById('appointmentsSection').style.display = 'none';
+      
       // Load real doctors
       loadDoctors();
+
+      // Ensure all sections except main are hidden (clean startup)
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      
+      console.log('User dashboard initialized with all functions complete (including book browsing)');
     });
+
     function logout() {
       localStorage.clear();
-      window.location.href = '/admin/user_auth/';
+      window.location.href = '/admin/user_auth/'; // This is correct - goes to user auth page
     }
 
     function loadDoctors(filter = 'all') {
+      // Update active button
+      updateActiveButton(filter);
+
       const doctorsList = document.querySelector('#doctorsList');
       doctorsList.innerHTML = '<p>Loading doctors...</p>';
-
+      
+      // Debug: Check if user is logged in
+      const userId = localStorage.getItem('user_id');
+      console.log('User ID from localStorage:', userId);
+      console.log('Cookies:', document.cookie);
+      
       let apiUrl = '/api/doctors/';
+      
+      // Apply filter to URL if needed
+      if (filter === 'nearby') {
+        const userPlace = localStorage.getItem('user_place');
+        if (userPlace) {
+          apiUrl = `/api/doctors/nearby/?place=${encodeURIComponent(userPlace)}`;
+        }
+      }
 
-      fetch(apiUrl)
-        .then(response => response.json())
-        .then(doctors => {
-          if (doctors.length === 0) {
-            doctorsList.innerHTML = '<p>No doctors available at the moment.</p>';
-            return;
+      fetch(apiUrl, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken': getCSRFToken(),
+        }
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          if (response.status === 403) {
+            throw new Error('Authentication failed - please log in again');
           }
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(doctors => {
+        console.log('Doctors data received:', doctors);
+        
+        // Handle different response formats (array or object with doctors property)
+        let doctorsArray = Array.isArray(doctors) ? doctors : (doctors.doctors || []);
+        
+        if (doctorsArray.length === 0) {
+          doctorsList.innerHTML = '<p>No doctors available at the moment.</p>';
+          return;
+        }
 
-          let filteredDoctors = doctors;
+        let filteredDoctors = doctorsArray;
 
-          // Apply filters
-          if (filter === 'available') {
-            filteredDoctors = doctors.filter(doctor => 
-              doctor.available && doctor.status === 'approved'
-            );
-          }
-
-          else if (filter === 'nearby') {
+        // Apply client-side filters if needed
+        if (filter === 'available') {
+          filteredDoctors = doctorsArray.filter(doctor => 
+            doctor.available && doctor.status === 'approved'
+          );
+        } else if (filter === 'nearby' && !apiUrl.includes('nearby')) {
+          // If nearby API wasn't used, filter client-side
           const userPlace = localStorage.getItem('user_place');
-                  
-          if (!userPlace) {
-            // Ask user for location or show message
+          if (userPlace) {
+            filteredDoctors = doctorsArray.filter(doctor => 
+              doctor.place === userPlace && doctor.status === 'approved'
+            );
+          } else {
             doctorsList.innerHTML = '<p>Please update your profile with location to find nearby doctors.</p>';
             return;
           }
-          
-          filteredDoctors = doctors.filter(doctor => 
-            doctor.place === userPlace && doctor.status === 'approved'
+        } else {
+          // Default - show approved doctors
+          filteredDoctors = doctorsArray.filter(doctor => 
+            doctor.status === 'approved'
           );
-  
-          if (filteredDoctors.length === 0) {
-            doctorsList.innerHTML = `<p>No doctors found in ${userPlace}. Try "All Doctors".</p>`;
-            return;
-          }
         }
+
+        if (filteredDoctors.length === 0) {
+          doctorsList.innerHTML = `<p>No ${filter} doctors found.</p>`;
+          return;
+        }
+
+        // Create an array of promises to fetch ratings for each doctor
+        const ratingPromises = filteredDoctors.map(doctor => 
+          fetch(`/api/doctors/${doctor.id}/feedback/`, {
+            credentials: 'include',
+            headers: {
+              'X-CSRFToken': getCSRFToken(),
+            }
+          })
+            .then(res => res.json())
+            .then(data => ({
+              doctorId: doctor.id,
+              avgRating: data.average_rating || 0,
+              totalReviews: data.total_feedbacks || 0
+            }))
+            .catch(() => ({
+              doctorId: doctor.id,
+              avgRating: 0,
+              totalReviews: 0
+            }))
+        );
+        
+        Promise.all(ratingPromises).then(ratings => {
+          // Create a map for quick lookup
+          const ratingMap = {};
+          ratings.forEach(r => ratingMap[r.doctorId] = r);
           
-          else {
-            // 'all' - show approved doctors
-            filteredDoctors = doctors.filter(doctor => 
-              doctor.status === 'approved'
-            );
-          }
-
-          if (filteredDoctors.length === 0) {
-            doctorsList.innerHTML = `<p>No ${filter} doctors found.</p>`;
-            return;
-          }
-
           let doctorsHTML = '';
           filteredDoctors.forEach(doctor => {
+            const rating = ratingMap[doctor.id] || { avgRating: 0, totalReviews: 0 };
+            const stars = '★'.repeat(Math.round(rating.avgRating)) + '☆'.repeat(5 - Math.round(rating.avgRating));
+            
             doctorsHTML += `
               <div class="card doctor-card">
                 <div class="doctor-avatar">${doctor.name.charAt(0).toUpperCase()}</div>
                 <div>
-                  <h3>Dr. ${doctor.name}</h3>
-                  <p>${doctor.specialization || 'Healthcare Professional'}</p>
-                  <p>${doctor.hospital_name || ''}</p>
-                  <p>📍 ${doctor.place || 'Location not specified'}</p>
-                  <p>⭐ ${doctor.experience || '0'} years experience</p>
-                  <p>${doctor.available ? '✅ Available now' : '⏳ Not available'}</p>
-                  <button onclick="showBookingForm(${doctor.id}, '${doctor.name}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">Book Appointment</button>
+                  <p><strong>Name:</strong> Dr. ${doctor.name}</p>
+                  <p><strong>Specialization:</strong> ${doctor.specialization || 'Not specified'}</p>
+                  <p><strong>Hospital Name:</strong> ${doctor.hospital_name || 'Not specified'}</p>
+                  <p><strong>Place:</strong> ${doctor.place || 'Not specified'}</p>
+                  <p><strong>Experience:</strong> ${doctor.experience || '0'} years</p>
+                  <p><strong>Rating:</strong> 
+                    <span style="color: #fbbf24;">${stars}</span>
+                    <span style="color: #94a3b8; margin-left: 5px;">(${rating.avgRating.toFixed(1)}/5 - ${rating.totalReviews} reviews)</span>
+                  </p>
+                  <p><strong>Available:</strong> ${doctor.available ? 'Yes' : 'No'}</p>
+                  <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="showBookingForm(${doctor.id}, '${doctor.name}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Book Appointment</button>
+                    <button onclick="showDoctorReviews(${doctor.id}, '${doctor.name}')" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Reviews (${rating.totalReviews})</button>
+                  </div>
                 </div>
               </div>
             `;
           });
-
+          
           doctorsList.innerHTML = doctorsHTML;
+        });
+      })
+      .catch(error => {
+        console.error('Error loading doctors:', error);
+        doctorsList.innerHTML = '<p>Error loading doctors. Please try again.</p>';
+      });
+    }
+
+    // Filter functions are now handled directly by loadDoctors()
+    // The buttons call loadDoctors('all') and loadDoctors('nearby') directly
+
+    function checkTimeSlots() {
+      const date = document.getElementById('appointmentDate').value;
+      const doctorId = selectedDoctorId;
+      
+      if (!date) {
+        alert('Please select a date first');
+        return;
+      }
+      
+      if (!doctorId) {
+        alert('No doctor selected');
+        return;
+      }
+      
+      // Show loading
+      const timeSlotsContainer = document.getElementById('availableTimeSlots');
+      timeSlotsContainer.innerHTML = '<p>Loading available time slots...</p>';
+      document.getElementById('timeSlotsContainer').style.display = 'block';
+      
+      // Fetch doctor's time slots for selected date
+      fetch(`/api/doctors/${doctorId}/time_slots/?date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+          const timeSlots = data.time_slots || [];
+          
+          if (timeSlots.length === 0) {
+            timeSlotsContainer.innerHTML = '<p>No time slots available for this date.</p>';
+            return;
+          }
+          
+          // Find available slots (not booked)
+          let availableSlotsHTML = '';
+          timeSlots.forEach(slot => {
+            if (!slot.is_booked) {
+              const slots = slot.slot_data?.slots || slot.slots_list || [];
+              slots.forEach(time => {
+                availableSlotsHTML += `
+                  <label style="display: block; margin-bottom: 8px;">
+                    <input type="radio" name="selectedTime" value="${time}" data-slot-id="${slot.id}" style="margin-right: 8px;">
+                    ${time}
+                  </label>
+                `;
+              });
+            }
+          });
+          
+          if (availableSlotsHTML === '') {
+            timeSlotsContainer.innerHTML = '<p>All slots are booked for this date.</p>';
+          } else {
+            timeSlotsContainer.innerHTML = availableSlotsHTML;
+          }
         })
         .catch(error => {
-          console.error('Error loading doctors:', error);
-          doctorsList.innerHTML = '<p>Error loading doctors. Please try again.</p>';
+          console.error('Error loading time slots:', error);
+          timeSlotsContainer.innerHTML = '<p>Error loading time slots.</p>';
         });
-    }
-
-    // Filter functions
-    function loadAllDoctors() {
-      loadDoctors('all');
-      updateActiveButton('all');
-    }
-
-    function loadNearbyDoctors() {
-      loadDoctors('nearby');
-      updateActiveButton('nearby');
     }
 
     function updateActiveButton(activeFilter) {
@@ -358,6 +860,37 @@ input, textarea {
         document.getElementById('allDoctorsBtn').style.background = '#3b82f6';
       } else if (activeFilter === 'nearby') {
         document.getElementById('nearbyDoctorsBtn').style.background = '#3b82f6';
+      }
+    }
+
+    function updateBookFilterButton(activeCategory) {
+      // Reset all book filter buttons to green
+      document.getElementById('allBooksBtn').style.background = '#10b981';
+      document.getElementById('adhdBooksBtn').style.background = '#10b981';
+      document.getElementById('anxietyBooksBtn').style.background = '#10b981';
+      document.getElementById('depressionBooksBtn').style.background = '#10b981';
+      document.getElementById('generalBooksBtn').style.background = '#10b981';
+        
+      // Set active button (blue for active, green for inactive)
+      const activeButton = document.getElementById(activeCategory + 'BooksBtn');
+      if (activeButton) {
+        activeButton.style.background = '#3b82f6'; // Blue for active
+      }
+    }
+
+    
+    function updateBookFilterButton(activeCategory) {
+      // Reset all book filter buttons
+      document.getElementById('allBooksBtn').style.background = '';
+      document.getElementById('adhdBooksBtn').style.background = '';
+      document.getElementById('anxietyBooksBtn').style.background = '';
+      document.getElementById('depressionBooksBtn').style.background = '';
+      document.getElementById('generalBooksBtn').style.background = '';
+        
+      // Set active button
+      const activeButton = document.getElementById(activeCategory + 'BooksBtn');
+      if (activeButton) {
+        activeButton.style.background = '#3b82f6';
       }
     }
 
@@ -384,42 +917,44 @@ input, textarea {
       document.getElementById('appointmentDate').min = today;
     }
 
-    function showDoctorsList() {
-      // Show doctors list, hide booking form
-      document.getElementById('nearbyDoctorsSection').style.display = 'block';
-      document.getElementById('bookingFormSection').style.display = 'none';
-      selectedDoctorId = null;
-      selectedDoctorName = '';
-    }
-
     document.getElementById('appointmentForm').addEventListener('submit', function(e) {
       e.preventDefault();
-        
+     
       if (!selectedDoctorId) {
         alert('No doctor selected. Please go back and select a doctor.');
         return;
       }
       
       const date = document.getElementById('appointmentDate').value;
-      const time = document.getElementById('appointmentTime').value;
       const reason = document.getElementById('reason').value;
+      
+      // Get selected time slot from radio buttons
+      const selectedTimeRadio = document.querySelector('input[name="selectedTime"]:checked');
+      if (!selectedTimeRadio) {
+        alert('Please select a time slot');
+        return;
+      }
+      const bookedTime = selectedTimeRadio.value;
       const userId = localStorage.getItem('user_id');
       
       
-      if (!date || !time) {
-        alert('Please select date and time');
+      if (!date || !bookedTime) {
+        alert('Please select date and time slot');
         return;
       }
       
-      // Validate time format
-      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-      if (!timeRegex.test(time)) {
-        alert('Please enter time in correct format (HH:MM). Example: 09:00 or 14:30');
+      // Validate time format (supports both 9.00 and 09:00 formats)
+      const timeRegex = /^([0-1]?[0-9]|2[0-3])[.:][0-5][0-9]$/;
+      if (!timeRegex.test(bookedTime)) {
+        alert('Please select a valid time slot');
         return;
       }
+
+      const timeSlotId = selectedTimeRadio.getAttribute('data-slot-id');
       
       const bookingData = {
-        time_slot_id: 7,  // Doctor d1's available time slot
+        time_slot_id: parseInt(timeSlotId),
+        booked_time: bookedTime,
         symptoms: reason || 'General consultation',
         notes: 'Booking from web portal',
         doctor_id: parseInt(selectedDoctorId)
@@ -449,15 +984,16 @@ input, textarea {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         return response.json();
-      })
+      }) 
       .then(data => {
         console.log('Booking created:', data);
-        alert(`✅ Appointment booked successfully with Dr. ${selectedDoctorName} on ${date} at ${time}`);
+        alert(`Appointment booked successfully with Dr. ${selectedDoctorName} on ${date} at ${bookedTime}`);
         
-        // Reset form and show doctors list
+        // Reset form and return to main dashboard
         document.getElementById('appointmentForm').reset();
-        showDoctorsList();
+        showMainDashboard();
       })
+
       .catch(error => {
         console.error('Booking error:', error);
         alert(`Error booking appointment: ${error.message}`);
@@ -469,6 +1005,513 @@ input, textarea {
       });
     });
     
+    document.getElementById('adhdForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get all form values
+      const formData = {
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        sleep_hours_avg: document.getElementById('sleep_hours_avg').value,
+        easily_distracted: document.getElementById('easily_distracted').value,
+        forgetful_daily_tasks: document.getElementById('forgetful_daily_tasks').value,
+        poor_organization: document.getElementById('poor_organization').value,
+        difficulty_sustaining_attention: document.getElementById('difficulty_sustaining_attention').value,
+        restlessness: document.getElementById('restlessness').value,
+        impulsivity_score: document.getElementById('impulsivity_score').value,
+        screen_time_daily: document.getElementById('screen_time_daily').value,
+        phone_unlocks_per_day: document.getElementById('phone_unlocks_per_day').value,
+        working_memory_score: document.getElementById('working_memory_score').value
+      };
+      
+      console.log('ADHD Form submitted:', formData);
+      
+      // Show loading
+      const submitBtn = document.querySelector('#adhdForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Assessing...';
+      submitBtn.disabled = true;
+      
+      // Call your existing API
+      fetch('/api/predict_adhd/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('ADHD Prediction result:', data);
+        // Save assessment result to database
+        const userId = localStorage.getItem('user_id');
+        if (userId) {
+          const saveData = {
+            user_id: parseInt(userId),
+            assessment_type: 'adhd',
+            result: data.prediction_label,
+            confidence: data.confidence,
+            details: {
+              features: {
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                sleep_hours_avg: document.getElementById('sleep_hours_avg').value,
+                easily_distracted: document.getElementById('easily_distracted').value,
+                forgetful_daily_tasks: document.getElementById('forgetful_daily_tasks').value,
+                poor_organization: document.getElementById('poor_organization').value,
+                difficulty_sustaining_attention: document.getElementById('difficulty_sustaining_attention').value,
+                restlessness: document.getElementById('restlessness').value,
+                impulsivity_score: document.getElementById('impulsivity_score').value,
+                screen_time_daily: document.getElementById('screen_time_daily').value,
+                phone_unlocks_per_day: document.getElementById('phone_unlocks_per_day').value,
+                working_memory_score: document.getElementById('working_memory_score').value
+              },
+              probabilities: data.probabilities
+            }
+          };
+          
+          fetch('/api/save-assessment/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(saveData)
+          }).catch(err => console.error('Error saving assessment:', err));
+        }
+        const resultDiv = document.createElement('div');
+        const isADHD = data.prediction_label === "ADHD";
+        const primaryColor = isADHD ? '#ef4444' : '#10b981';
+        
+        resultDiv.innerHTML = `
+          <div style="background: #1e293b; padding: 20px; border-radius: 8px; margin-top: 20px; border: 2px solid ${primaryColor};">
+            <h3 style="color: ${primaryColor}; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+              ${isADHD ? '⚠️' : '✅'} ADHD Assessment Results
+            </h3>
+            <div style="margin-bottom: 10px; padding: 10px; background: #0f172a; border-radius: 6px;">
+              <strong style="color: #f8fafc;">Result:</strong> 
+              <span style="color: ${primaryColor}; font-weight: bold; font-size: 18px; margin-left: 10px;">
+                ${data.prediction_label}
+              </span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Confidence Level:</strong> 
+              <span style="color: #60a5fa;">${(data.confidence * 100).toFixed(1)}%</span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Detailed Probabilities:</strong>
+              <div style="margin-top: 10px;">
+                <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                  <div style="width: 100px;">No ADHD:</div>
+                  <div style="flex: 1; background: #334155; height: 20px; border-radius: 10px; overflow: hidden;">
+                    <div style="background: #10b981; height: 100%; width: ${(data.probabilities?.no_adhd * 100 || 0).toFixed(1)}%;"></div>
+                  </div>
+                  <div style="width: 60px; text-align: right; margin-left: 10px;">
+                    ${(data.probabilities?.no_adhd * 100 || 0).toFixed(1)}%
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <div style="width: 100px;">ADHD:</div>
+                  <div style="flex: 1; background: #334155; height: 20px; border-radius: 10px; overflow: hidden;">
+                    <div style="background: #ef4444; height: 100%; width: ${(data.probabilities?.adhd * 100 || 0).toFixed(1)}%;"></div>
+                  </div>
+                  <div style="width: 60px; text-align: right; margin-left: 10px;">
+                    ${(data.probabilities?.adhd * 100 || 0).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 15px; padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid #f59e0b;">
+              <strong>💡 Recommendation:</strong><br>
+              ${isADHD ? 
+                'Consider consulting with a mental health professional for further evaluation and guidance.' : 
+                'Your assessment shows low ADHD risk. Maintain healthy habits and regular check-ins.'}
+            </div>
+            <button onclick="this.parentElement.remove()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%;">Close Results</button>
+          </div>
+        `;
+        
+        // Clear previous results and display new ones
+        const resultsContainer = document.getElementById('adhdResults');
+        resultsContainer.innerHTML = '';
+        resultsContainer.appendChild(resultDiv);
+
+        // Reset form
+        document.getElementById('adhdForm').reset();
+      })
+
+      .catch(error => {
+        console.error('ADHD assessment error:', error);
+        alert(`Error assessing ADHD: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+
+    // Anxiety form submission
+    document.getElementById('anxietyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Get all form values (8 fields now)
+      const formData = {
+        Sadness: document.getElementById('Sadness').value,
+        Euphoric: document.getElementById('Euphoric').value,
+        Exhausted: document.getElementById('Exhausted').value,
+        'Sleep dissorder': document.getElementById('Sleep dissorder').value,
+        'Mood Swing': document.getElementById('Mood Swing').value,
+        'Suicidal thoughts': document.getElementById('Suicidal thoughts').value,
+        Anorxia: document.getElementById('Anorxia').value,
+        'Authority Respect': document.getElementById('Authority Respect').value,
+        'Try-Explanation': document.getElementById('Try-Explanation').value,
+        'Aggressive Response': document.getElementById('Aggressive Response').value,
+        'Ignore & Move-On': document.getElementById('Ignore & Move-On').value,
+        'Nervous Break-down': document.getElementById('Nervous Break-down').value,
+        'Admit Mistakes': document.getElementById('Admit Mistakes').value,
+        Overthinking: document.getElementById('Overthinking').value,
+      };
+      
+      console.log('Anxiety Form submitted:', formData);
+      
+      // Show loading
+      const submitBtn = document.querySelector('#anxietyForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Assessing...';
+      submitBtn.disabled = true;
+      
+      // Call your existing anxiety API
+      fetch('/api/predict_anxiety/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Anxiety Prediction result:', data);
+        
+        // Save anxiety assessment result to database
+        const userId = localStorage.getItem('user_id');
+        if (userId) {
+          const saveData = {
+            user_id: parseInt(userId),
+            assessment_type: 'anxiety',
+            result: data.prediction_label,
+            confidence: data.confidence,
+            details: {
+              features: {
+                Sadness: document.getElementById('Sadness').value,
+                Euphoric: document.getElementById('Euphoric').value,
+                Exhausted: document.getElementById('Exhausted').value,
+                'Sleep dissorder': document.getElementById('Sleep dissorder').value,
+                'Mood Swing': document.getElementById('Mood Swing').value,
+                'Suicidal thoughts': document.getElementById('Suicidal thoughts').value,
+                Anorxia: document.getElementById('Anorxia').value,
+                'Authority Respect': document.getElementById('Authority Respect').value,
+                'Try-Explanation': document.getElementById('Try-Explanation').value,
+                'Aggressive Response': document.getElementById('Aggressive Response').value,
+                'Ignore & Move-On': document.getElementById('Ignore & Move-On').value,
+                'Nervous Break-down': document.getElementById('Nervous Break-down').value,
+                'Admit Mistakes': document.getElementById('Admit Mistakes').value,
+                Overthinking: document.getElementById('Overthinking').value
+              },
+              simple_label: data.simple_label,
+              anxiety_scale: data.anxiety_scale,
+              probabilities: data.probabilities
+            }
+          };
+          
+          fetch('/api/save-assessment/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(saveData)
+          }).catch(err => console.error('Error saving assessment:', err));
+        }
+        
+        // Show results
+        const resultsContainer = document.getElementById('anxietyResults');
+        resultsContainer.innerHTML = '';
+        
+        const resultDiv = document.createElement('div');
+        
+        // Determine anxiety level color
+        let resultColor = '#10b981'; // Default green for NO
+        
+        let recommendation = 'Your assessment shows low anxiety risk. Maintain healthy habits and mindfulness.';
+        
+        if (data.simple_label === 'YES' || data.prediction_label.includes('YES') || data.prediction_label.includes('Anxiety')) {
+          resultColor = '#ef4444'; // Red for anxiety
+          
+          recommendation = 'Consider consulting with a mental health professional for further evaluation and support.';
+        } else if (data.prediction_label.includes('Bipolar')) {
+          resultColor = '#8b5cf6'; // Purple for bipolar
+          recommendation = 'This indicates possible bipolar patterns. Please consult a psychiatrist for proper diagnosis.';
+        }
+        
+        resultDiv.innerHTML = `
+          <div style="background: #1e293b; padding: 20px; border-radius: 8px; margin-top: 20px; border: 2px solid ${resultColor};">
+            <h3 style="color: ${resultColor}; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+              Anxiety Assessment Results
+            </h3>
+            <div style="margin-bottom: 10px; padding: 10px; background: #0f172a; border-radius: 6px;">
+              <strong style="color: #f8fafc;">Assessment:</strong> 
+              <span style="color: ${resultColor}; font-weight: bold; font-size: 18px; margin-left: 10px;">
+                ${data.prediction_label}
+              </span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Simple Result:</strong> 
+              <span style="color: #60a5fa;">${data.simple_label || 'N/A'}</span>
+            </div>
+            <div style="margin-bottom: 10px;">
+              <strong>Confidence Level:</strong> 
+              <span style="color: #fbbf24;">${(data.confidence * 100).toFixed(1)}%</span>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid ${resultColor};">
+              <strong> Recommendation:</strong><br>
+              ${recommendation}
+            </div>
+            
+            ${data.anxiety_scale ? `
+            <div style="margin-top: 15px; padding: 10px; background: #0f172a; border-radius: 6px;">
+              <strong> Anxiety Scale:</strong><br>
+              <small style="color: #94a3b8;">
+                ${Object.entries(data.anxiety_scale).map(([key, value]) => `${key}: ${value}`).join('<br>')}
+              </small>
+            </div>
+            ` : ''}
+            
+            <button onclick="this.parentElement.remove()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%;">Close Results</button>
+          </div>
+        `;
+        
+        resultsContainer.appendChild(resultDiv);
+        
+        // Reset form
+        document.getElementById('anxietyForm').reset();
+      })
+      .catch(error => {
+        console.error('Anxiety assessment error:', error);
+        alert(`Error assessing anxiety: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+    
+    function loadMoodHistory() {
+      const userId = localStorage.getItem('user_id');
+      const moodHistory = document.getElementById('moodHistory');
+      
+      if (!userId) {
+        moodHistory.innerHTML = '<p style="color: #ef4444;">Error: User not logged in</p>';
+        return;
+      }
+      
+      moodHistory.innerHTML = '<p>Loading mood history...</p>';
+      
+      // Fetch mood logs for this user
+      fetch('/api/moodlogs/')
+        .then(response => response.json())
+        .then(data => {
+          // Filter logs for current user (since API returns all)
+          const userMoods = data.filter(log => log.user === parseInt(userId));
+          
+          if (userMoods.length === 0) {
+            moodHistory.innerHTML = '<p>No mood entries yet. Start tracking your mood above!</p>';
+            return;
+          }
+          
+          // Sort by date (newest first)
+          userMoods.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          let moodsHTML = '';
+          userMoods.forEach(log => {
+            const date = new Date(log.created_at).toLocaleDateString();
+            const time = new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Mood emoji mapping
+            const moodEmoji = {
+              'Happy': '😊',
+              'Sad': '😢',
+              'Stressed': '😰',
+              'Calm': '😌',
+              'Anxious': '😟',
+              'Energetic': '⚡',
+              'Tired': '😴'
+            };
+            
+            moodsHTML += `
+              <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <div>
+                    <span style="font-size: 24px; margin-right: 10px;">${moodEmoji[log.mood] || '😐'}</span>
+                    <strong>${log.mood}</strong>
+                  </div>
+                  <small style="color: #94a3b8;">${date} at ${time}</small>
+                </div>
+                ${log.note ? `<p style="color: #cbd5e1; margin-top: 5px;">📝 ${log.note}</p>` : ''}
+              </div>
+            `;
+          });
+          
+          moodHistory.innerHTML = moodsHTML;
+        })
+        .catch(error => {
+          console.error('Error loading mood history:', error);
+          moodHistory.innerHTML = '<p style="color: #ef4444;">Error loading mood history. Please try again.</p>';
+        });
+    }
+
+    function viewAssessmentHistory() {
+      const userId = localStorage.getItem('user_id');
+      
+      // Hide profile section
+      document.getElementById('profileSection').style.display = 'none';
+      
+      // Create assessment history section if it doesn't exist
+      let historySection = document.getElementById('assessmentHistorySection');
+      if (!historySection) {
+        const mainContent = document.querySelector('.main-content');
+        historySection = document.createElement('div');
+        historySection.id = 'assessmentHistorySection';
+        historySection.style.display = 'block';
+        historySection.innerHTML = `
+          <h2 class="section-title">Assessment History</h2>
+          <div class="card">
+            <div style="margin-bottom: 15px;">
+              <button onclick="showProfile()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Profile</button>
+            </div>
+            <div id="assessmentsList">
+              <p>Loading assessment history...</p>
+            </div>
+          </div>
+        `;
+        mainContent.appendChild(historySection);
+      } else {
+        historySection.style.display = 'block';
+      }
+      
+      // Load assessments
+      loadAssessmentHistory(userId);
+    }
+
+    function loadAssessmentHistory(userId) {
+      const assessmentsList = document.getElementById('assessmentsList');
+      if (!assessmentsList) return;
+      
+      assessmentsList.innerHTML = '<p>Loading assessment history...</p>';
+      
+      fetch(`/api/users/${userId}/assessments/`)
+        .then(response => response.json())
+        .then(data => {
+          const assessments = data.assessments || [];
+          
+          if (assessments.length === 0) {
+            assessmentsList.innerHTML = '<p>No assessment history found. Take an ADHD or Anxiety assessment to see results here.</p>';
+            return;
+          }
+          
+          let historyHTML = '';
+          assessments.forEach(assessment => {
+            const date = new Date(assessment.created_at).toLocaleDateString();
+            const time = new Date(assessment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Determine color based on assessment type and result
+            let resultColor = '#94a3b8';
+            if (assessment.assessment_type === 'adhd') {
+              resultColor = assessment.result === 'ADHD' ? '#ef4444' : '#10b981';
+            } else if (assessment.assessment_type === 'anxiety') {
+              if (assessment.result.includes('YES') || assessment.result.includes('Anxiety')) {
+                resultColor = '#ef4444';
+              } else if (assessment.result.includes('Bipolar')) {
+                resultColor = '#8b5cf6';
+              } else {
+                resultColor = '#10b981';
+              }
+            }
+            
+            historyHTML += `
+              <div class="card" style="margin-bottom: 15px; border-left: 4px solid ${resultColor};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <div>
+                    <strong>${assessment.assessment_type === 'adhd' ? '🧠 ADHD Assessment' : '😰 Anxiety Assessment'}</strong>
+                    <span style="margin-left: 10px; color: ${resultColor}; font-weight: bold;">${assessment.result}</span>
+                  </div>
+                  <small style="color: #94a3b8;">${date} at ${time}</small>
+                </div>
+                <p><strong>Confidence:</strong> ${(assessment.confidence * 100).toFixed(1)}%</p>
+                <details style="margin-top: 10px;">
+                  <summary style="color: #60a5fa; cursor: pointer;">View Details</summary>
+                  <div style="margin-top: 10px; padding: 10px; background: #1e293b; border-radius: 6px;">
+                    <pre style="color: #cbd5e1; font-size: 12px; overflow-x: auto;">${JSON.stringify(assessment.details, null, 2)}</pre>
+                  </div>
+                </details>
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                  <button onclick="deleteAssessment(${assessment.id})" style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+                </div>
+              </div>
+            `;
+          });
+          
+          assessmentsList.innerHTML = historyHTML;
+        })
+        .catch(error => {
+          console.error('Error loading assessment history:', error);
+          assessmentsList.innerHTML = '<p style="color: #ef4444;">Error loading assessment history. Please try again.</p>';
+        });
+    }
+
+    function deleteAssessment(assessmentId) {
+      if (!confirm('Are you sure you want to delete this assessment record?')) {
+        return;
+      }
+      
+      fetch(`/api/assessments/${assessmentId}/`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': getCSRFToken(),
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Assessment deleted successfully');
+        // Reload assessment history
+        const userId = localStorage.getItem('user_id');
+        loadAssessmentHistory(userId);
+      })
+      .catch(error => {
+        console.error('Error deleting assessment:', error);
+        alert(`Error deleting assessment: ${error.message}`);
+      });
+    }
+
     // Add CSRF token function if not already there
     function getCSRFToken() {
       const name = 'csrftoken=';
@@ -485,6 +1528,1487 @@ input, textarea {
       }
       return '';
     }
+
+    function showADHDAssessment() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'block';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Reset form
+      document.getElementById('adhdForm').reset();
+    }
+
+    function showAnxietyAssessment() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'block';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Reset form
+      document.getElementById('anxietyForm').reset();
+    }
+
+    function showAppointments() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Show appointments section
+      document.getElementById('appointmentsSection').style.display = 'block';
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Load appointments
+      loadUserAppointments();
+    }
+
+    function showBooks() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'block';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Load books
+      loadBooks();
+    }
+
+    function showMoodTracking() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'block';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Load mood history
+      loadMoodHistory();
+    }
+    // Mood form submission
+    document.getElementById('moodForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        alert('You must be logged in to log mood');
+        return;
+      }
+      
+      const mood = document.getElementById('moodSelect').value;
+      const notes = document.getElementById('moodNotes').value;
+      
+      if (!mood) {
+        alert('Please select a mood');
+        return;
+      }
+      
+      const formData = {
+        user: parseInt(userId),
+        mood: mood,
+        note: notes || ''
+      };
+      
+      // Show loading
+      const submitBtn = document.querySelector('#moodForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Logging...';
+      submitBtn.disabled = true;
+      
+      // Send to API
+      fetch('/api/moodlogs/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Mood logged successfully!');
+        // Reset form
+        document.getElementById('moodForm').reset();
+        // Reload mood history
+        loadMoodHistory();
+      })
+      .catch(error => {
+        console.error('Error logging mood:', error);
+        alert(`Error logging mood: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+
+    function showChatbot() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      document.getElementById('chatbotSection').style.display = 'block';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Clear chat input and focus
+      document.getElementById('chatInput').value = '';
+      document.getElementById('chatInput').focus();
+    }
+
+    // Chat form submission
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const message = document.getElementById('chatInput').value.trim();
+      if (!message) return;
+      
+      // Add user message to chat
+      addMessageToChat('user', message);
+      
+      // Clear input
+      document.getElementById('chatInput').value = '';
+      
+      // Show typing indicator
+      showTypingIndicator();
+      
+      // Send to API
+      fetch('/api/chat/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: message })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        if (data.reply) {
+          addMessageToChat('bot', data.reply);
+        } else if (data.error) {
+          addMessageToChat('bot', `Sorry, I encountered an error: ${data.error}`);
+        } else {
+          addMessageToChat('bot', "I'm not sure how to respond to that. Could you rephrase?");
+        }
+      })
+      .catch(error => {
+        console.error('Chat error:', error);
+        removeTypingIndicator();
+        addMessageToChat('bot', 'Sorry, I am having trouble connecting. Please try again later.');
+      });
+    });
+
+    function addMessageToChat(sender, text) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.style.display = 'flex';
+      messageDiv.style.alignItems = 'flex-start';
+      messageDiv.style.gap = '10px';
+      messageDiv.style.marginBottom = '10px';
+      
+      if (sender === 'user') {
+        messageDiv.style.justifyContent = 'flex-end';
+        messageDiv.innerHTML = `
+          <div style="background: #3b82f6; padding: 12px 16px; border-radius: 18px 18px 4px 18px; max-width: 70%;">
+            <p style="color: white;">${escapeHTML(text)}</p>
+          </div>
+          <div style="width: 35px; height: 35px; background: #60a5fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">👤</div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div style="width: 35px; height: 35px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+          <div style="background: #0f172a; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 70%;">
+            <p style="color: #cbd5e1; white-space: pre-wrap;">${escapeHTML(text)}</p>
+          </div>
+        `;
+      }
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const chatMessages = document.getElementById('chatMessages');
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'typingIndicator';
+      typingDiv.style.display = 'flex';
+      typingDiv.style.alignItems = 'flex-start';
+      typingDiv.style.gap = '10px';
+      typingDiv.innerHTML = `
+        <div style="width: 35px; height: 35px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+        <div style="background: #0f172a; padding: 12px 16px; border-radius: 18px 18px 18px 4px;">
+          <p style="color: #94a3b8;">Typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></p>
+        </div>
+      `;
+      chatMessages.appendChild(typingDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const typingIndicator = document.getElementById('typingIndicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+    function escapeHTML(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showProfile() {
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'block';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      document.getElementById('moodSection').style.display = 'none';
+      
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Load profile data
+      loadUserProfile();
+    }
+
+    function loadUserProfile() {
+      const userId = localStorage.getItem('user_id');
+      const profileInfo = document.getElementById('profileInfo');
+      
+      if (!userId) {
+        profileInfo.innerHTML = '<p style="color: #ef4444;">Error: User not logged in</p>';
+        return;
+      }
+      
+      profileInfo.innerHTML = '<p>Loading profile...</p>';
+      
+      // Fetch user data from API
+      fetch(`/api/users/${userId}/`)
+        .then(response => response.json())
+        .then(user => {
+          profileInfo.innerHTML = `
+            <h3 style="margin-bottom: 15px;">${user.name}</h3>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Phone:</strong> ${user.phone || 'Not set'}</p>
+            <p><strong>Place:</strong> ${user.place || 'Not set'}</p>
+            <p><strong>Address:</strong> ${user.address || 'Not set'}</p>
+            <p><strong>Gender:</strong> ${user.gender || 'Not set'}</p>
+            <p><strong>Member since:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
+            <div style="margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+              <button onclick="editProfile()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Edit Profile</button>
+              <button onclick="changePassword()" style="background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Change Password</button>
+              <button onclick="viewAssessmentHistory()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Assessment History</button>
+              <button onclick="loadUserReviews()" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">My Reviews</button>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error('Error loading profile:', error);
+          profileInfo.innerHTML = '<p style="color: #ef4444;">Error loading profile</p>';
+        });
+    }
+    
+    function editProfile() {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) return;
+      
+      // Fetch current user data
+      fetch(`/api/users/${userId}/`)
+        .then(response => response.json())
+        .then(user => {
+          // Create edit form
+          const profileInfo = document.getElementById('profileInfo');
+          profileInfo.innerHTML = `
+            <h3 style="margin-bottom: 15px;">Edit Profile</h3>
+            <form id="editProfileForm">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="editName" value="${user.name || ''}" required>
+              </div>
+              
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="editEmail" value="${user.email || ''}" required readonly style="background: #475569;">
+                <small style="color: #94a3b8;">Email cannot be changed</small>
+              </div>
+              
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="editPhone" value="${user.phone || ''}">
+              </div>
+              
+              <div class="form-group">
+                <label>District</label>
+                <input type="text" id="editPlace" value="${user.place || ''}">
+              </div>
+              
+              <div class="form-group">
+                <label>Gender</label>
+                <select id="editGender">
+                  <option value="">Select Gender</option>
+                  <option value="Male" ${user.gender === 'Male' ? 'selected' : ''}>Male</option>
+                  <option value="Female" ${user.gender === 'Female' ? 'selected' : ''}>Female</option>
+                  <option value="Other" ${user.gender === 'Other' ? 'selected' : ''}>Other</option>
+                  <option value="Prefer not to say" ${user.gender === 'Prefer not to say' ? 'selected' : ''}>Prefer not to say</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Address</label>
+                <textarea id="editAddress" rows="3">${user.address || ''}</textarea>
+              </div>
+              
+              <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px; margin-right: 10px;">Save Changes</button>
+              <button type="button" onclick="loadUserProfile()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+            </form>
+          `;
+          
+          // Add form submit handler
+          document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveProfileChanges(userId);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading profile for edit:', error);
+          alert('Error loading profile data');
+        });
+    }
+
+    function changePassword() {
+      const userId = localStorage.getItem('user_id');
+      if (!userId) return;
+      
+      const profileInfo = document.getElementById('profileInfo');
+      
+      // Show password change form
+      profileInfo.innerHTML = `
+        <h3 style="margin-bottom: 15px;">Change Password</h3>
+        <form id="changePasswordForm">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="currentPassword" required>
+          </div>
+          
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="newPassword" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPassword" required>
+          </div>
+          
+          <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px; margin-right: 10px;">Update Password</button>
+          <button type="button" onclick="loadUserProfile()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+        </form>
+      `;
+      
+      // Add form submit handler
+      document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        updatePassword(userId);
+      });
+    }
+
+    function updatePassword(userId) {
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Show loading
+      const submitBtn = document.querySelector('#changePasswordForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Updating...';
+      submitBtn.disabled = true;
+      
+      // First verify current password by trying to login
+      fetch('/api/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: document.getElementById('editEmail')?.value || localStorage.getItem('user_email'),
+          password: currentPassword
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Current password is incorrect');
+        }
+        return response.json();
+      })
+      .then(() => {
+        // Current password is correct, now update password
+        // First get current user data
+        return fetch(`/api/users/${userId}/`)
+          .then(response => response.json())
+          .then(userData => {
+            // Update only the password, keep all other fields same
+            const formData = {
+              name: userData.name,
+              email: userData.email,
+              password: newPassword,
+              phone: userData.phone || '',
+              place: userData.place || '',
+              gender: userData.gender || '',
+              address: userData.address || ''
+            };
+            
+            return fetch(`/api/users/${userId}/`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+              },
+              body: JSON.stringify(formData)
+            });
+          });
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(() => {
+        alert('Password updated successfully!');
+        // Return to profile view
+        loadUserProfile();
+      })
+      .catch(error => {
+        console.error('Error updating password:', error);
+        alert(error.message || 'Error updating password. Please try again.');
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    function saveProfileChanges(userId) {
+      const formData = {
+        name: document.getElementById('editName').value,
+        phone: document.getElementById('editPhone').value,
+        place: document.getElementById('editPlace').value,
+        gender: document.getElementById('editGender').value,
+        address: document.getElementById('editAddress').value
+      };
+      
+      // Show loading
+      const saveBtn = document.querySelector('#editProfileForm button[type="submit"]');
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = 'Saving...';
+      saveBtn.disabled = true;
+      
+      // Send update to API
+      fetch(`/api/users/${userId}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(updatedUser => {
+        alert('Profile updated successfully!');
+        // Update localStorage with new name if changed
+        if (updatedUser.name) {
+          localStorage.setItem('user_name', updatedUser.name);
+          document.getElementById('userName').textContent = updatedUser.name;
+          document.getElementById('userAvatar').textContent = updatedUser.name.charAt(0).toUpperCase();
+        }
+        // Reload profile view
+        loadUserProfile();
+      })
+      .catch(error => {
+        console.error('Error saving profile:', error);
+        alert(`Error saving profile: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      });
+    }
+
+    function loadUserAppointments() {
+      const userId = localStorage.getItem('user_id');
+      const appointmentsList = document.getElementById('appointmentsList');
+      
+      if (!userId) {
+        appointmentsList.innerHTML = '<p style="color: #ef4444;">Error: User not logged in</p>';
+        return;
+      }
+      
+      appointmentsList.innerHTML = '<p>Loading appointments...</p>';
+      
+      // Fetch user appointments from API
+      fetch(`/api/users/${userId}/bookings/`)
+        .then(response => response.json())
+        .then(data => {
+          const appointments = data.bookings || [];
+          
+          if (appointments.length === 0) {
+            appointmentsList.innerHTML = '<p>No appointments booked yet.</p>';
+            return;
+          }
+          
+          let appointmentsHTML = '';
+          appointments.forEach(booking => {
+            const date = booking.time_slot_details?.date || 'N/A';
+            const time = booking.booked_time || 'N/A';
+            const doctorName = booking.doctor_name || 'Doctor';
+            const status = booking.status || 'pending';
+            
+            // Create status class
+            const statusClass = `status-${status}`;
+            
+          appointmentsHTML += `
+              <div class="appointment-card" style="background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #334155;">
+                <div>
+                  <h4 style="color: #f8fafc; margin-bottom: 5px;">Appointment Details</h4>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Doctor:</strong> Dr. ${doctorName}</p>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Date:</strong> ${date}</p>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Time:</strong> ${time}</p>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Symptoms:</strong> ${booking.symptoms || 'None specified'}</p>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Notes:</strong> ${booking.notes || 'None'}</p>
+                  <p style="color: #94a3b8;"><strong>Status:</strong> 
+                    <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background: ${getStatusColor(status)};">
+                      ${status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                  </p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  ${status === 'pending' ? `
+                    <button onclick="rescheduleAppointment(${booking.id})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Reschedule</button>
+                    <button onclick="cancelAppointment(${booking.id})" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
+                  ` : ''}
+                  ${status === 'confirmed' ? `
+                    <button onclick="addNotesToAppointment(${booking.id})" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Add Notes</button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          });
+          
+          appointmentsList.innerHTML = appointmentsHTML;
+        })
+        .catch(error => {
+          console.error('Error loading appointments:', error);
+          appointmentsList.innerHTML = '<p style="color: #ef4444;">Error loading appointments</p>';
+        });
+    }
+
+    function loadUserReviews() {
+      const userId = localStorage.getItem('user_id');
+      const myReviewsList = document.getElementById('myReviewsList');
+      
+      // Hide profile section, show my reviews section
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'block';
+      
+      if (!userId) {
+        myReviewsList.innerHTML = '<p style="color: #ef4444;">Error: User not logged in</p>';
+        return;
+      }
+      
+      myReviewsList.innerHTML = '<p>Loading your reviews...</p>';
+      
+      // Since there's no direct API endpoint for user reviews,
+      // we need to fetch all doctors and collect reviews by this user
+      fetch('/api/doctors/')
+        .then(response => response.json())
+        .then(doctors => {
+          const userReviews = [];
+          const promises = [];
+          
+          // For each doctor, fetch their feedback
+          doctors.forEach(doctor => {
+            if (doctor.status === 'approved') {
+              promises.push(
+                fetch(`/api/doctors/${doctor.id}/feedback/`)
+                  .then(res => res.json())
+                  .then(data => {
+                    // Filter feedbacks by current user
+                    const userFeedbacks = (data.feedbacks || []).filter(f => f.user === parseInt(userId));
+                    userFeedbacks.forEach(feedback => {
+                      userReviews.push({
+                        ...feedback,
+                        doctor_name: doctor.name,
+                        doctor_id: doctor.id
+                      });
+                    });
+                  })
+                  .catch(err => console.error('Error fetching doctor feedback:', err))
+              );
+            }
+          });
+          
+          Promise.all(promises).then(() => {
+            if (userReviews.length === 0) {
+              myReviewsList.innerHTML = '<p>You haven\'t reviewed any doctors yet.</p>';
+              return;
+            }
+            
+            let reviewsHTML = '';
+            userReviews.forEach(review => {
+              const date = new Date(review.created_at).toLocaleDateString();
+              reviewsHTML += `
+                <div class="card" style="margin-bottom: 15px; position: relative;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Dr. ${review.doctor_name}</strong>
+                    <span style="color: #fbbf24;">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+                  </div>
+                  <p style="color: #94a3b8; margin-bottom: 5px;">${review.comment}</p>
+                  <small style="color: #6b7280;">${date}</small>
+                  <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button onclick="editReview(${review.id}, ${review.doctor_id}, '${review.comment}', ${review.rating})" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Edit</button>
+                    <button onclick="deleteReview(${review.id})" style="background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
+                  </div>
+                </div>
+              `;
+            });
+            
+            myReviewsList.innerHTML = reviewsHTML;
+          });
+        })
+        .catch(error => {
+          console.error('Error loading user reviews:', error);
+          myReviewsList.innerHTML = '<p style="color: #ef4444;">Error loading your reviews. Please try again.</p>';
+        });
+    }
+
+    function loadBooks(category = 'all') {
+      // Update active filter button
+      updateBookFilterButton(category);
+      
+      // Ensure books list is visible (in case we're in detail view)
+      document.getElementById('booksList').style.display = 'block';
+      
+      // Remove any existing detail view
+      const detailContent = document.getElementById('bookDetailContent');
+      const backButton = detailContent ? detailContent.previousElementSibling : null;
+      
+      if (backButton && backButton.tagName === 'DIV' && backButton.querySelector('button')) {
+        backButton.remove();
+      }
+      if (detailContent) {
+        detailContent.remove();
+      }
+      
+      const booksList = document.getElementById('booksList');
+      booksList.innerHTML = '<p>Loading books...</p>';
+      
+      // Build API URL with category filter
+      let apiUrl = '/api/user/books/';
+      if (category !== 'all') {
+        apiUrl += `?category=${category}`;
+      }
+      
+      // Fetch books from API
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          const books = data.books || [];
+          
+          if (books.length === 0) {
+            booksList.innerHTML = `<p>No ${category === 'all' ? '' : category} books available.</p>`;
+            return;
+          }
+          
+          let booksHTML = '';
+          books.forEach(book => {
+            booksHTML += `
+              <div class="card" style="margin-bottom: 20px; cursor: pointer;" onclick="showBookDetail(${book.id})">
+                <h3>${book.title}</h3>
+                <p><strong>Author:</strong> ${book.author}</p>
+                <p><strong>Category:</strong> ${book.category}</p>
+                <p>${book.description ? book.description.substring(0, 150) + '...' : 'No description available'}</p>
+              </div>
+            `;
+          });
+          
+          booksList.innerHTML = booksHTML;
+        })
+        .catch(error => {
+          console.error('Error loading books:', error);
+          booksList.innerHTML = '<p style="color: #ef4444;">Error loading books. Please try again.</p>';
+        });
+    }
+    
+    
+    function getStatusColor(status) {
+      switch(status) {
+        case 'confirmed': return '#10b981';
+        case 'pending': return '#f59e0b';
+        case 'cancelled': return '#dc2626';
+        case 'completed': return '#3b82f6';
+        default: return '#6b7280';
+      }
+    }
+
+    function cancelAppointment(bookingId) {
+      if (!confirm('Are you sure you want to cancel this appointment?')) {
+        return;
+      }
+      
+      // Send cancellation request
+      fetch(`/api/bookings/${bookingId}/status/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Appointment cancelled successfully!');
+        // Reload appointments list
+        loadUserAppointments();
+      })
+      .catch(error => {
+        console.error('Error cancelling appointment:', error);
+        alert(`Error cancelling appointment: ${error.message}`);
+      });
+    }
+
+    function rescheduleAppointment(bookingId) {
+      // Store booking ID for rescheduling
+      localStorage.setItem('reschedule_booking_id', bookingId);
+      
+      // Show reschedule form
+      const appointmentSection = document.getElementById('appointmentsSection');
+      const originalContent = appointmentSection.innerHTML;
+      
+      // Save original content for later
+      localStorage.setItem('appointments_original', originalContent);
+      
+      // Create reschedule form
+      appointmentSection.innerHTML = `
+        <h2 class="section-title">Reschedule Appointment</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="cancelReschedule()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Appointments</button>
+          </div>
+          
+          <form id="rescheduleForm">
+            <div class="form-group">
+              <label>Select New Date</label>
+              <input type="date" id="newAppointmentDate" required>
+              <button type="button" onclick="checkNewTimeSlots()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 14px;">Check Available Time Slots</button>
+            </div>
+            
+            <div id="newTimeSlotsContainer" style="display: none;">
+              <div class="form-group">
+                <label>Select New Time Slot</label>
+                <div id="newAvailableTimeSlots">
+                  <!-- Time slots will be loaded here -->
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Reason for Rescheduling (optional)</label>
+              <textarea id="rescheduleReason" rows="2" placeholder="Let the doctor know why you're rescheduling..."></textarea>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Confirm Reschedule</button>
+          </form>
+        </div>
+      `;
+      
+      // Set minimum date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('newAppointmentDate').min = tomorrow.toISOString().split('T')[0];
+      
+      // Add form submit handler
+      document.getElementById('rescheduleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        confirmReschedule(bookingId);
+      });
+    }
+
+    function checkNewTimeSlots() {
+      const date = document.getElementById('newAppointmentDate').value;
+      const bookingId = localStorage.getItem('reschedule_booking_id');
+      
+      if (!date) {
+        alert('Please select a date first');
+        return;
+      }
+      
+      if (!bookingId) {
+        alert('No booking selected');
+        return;
+      }
+      
+      // Get doctor ID from booking
+      fetch(`/api/bookings/${bookingId}/`)
+        .then(response => response.json())
+        .then(booking => {
+          const doctorId = booking.doctor;
+          
+          // Show loading
+          const timeSlotsContainer = document.getElementById('newAvailableTimeSlots');
+          timeSlotsContainer.innerHTML = '<p>Loading available time slots...</p>';
+          document.getElementById('newTimeSlotsContainer').style.display = 'block';
+          
+          // Fetch doctor's time slots for selected date
+          fetch(`/api/doctors/${doctorId}/time_slots/?date=${date}`)
+            .then(response => response.json())
+            .then(data => {
+              const timeSlots = data.time_slots || [];
+              
+              if (timeSlots.length === 0) {
+                timeSlotsContainer.innerHTML = '<p>No time slots available for this date.</p>';
+                return;
+              }
+              
+              // Find available slots (not booked)
+              let availableSlotsHTML = '';
+              timeSlots.forEach(slot => {
+                if (!slot.is_booked) {
+                  const slots = slot.slot_data?.slots || slot.slots_list || [];
+                  slots.forEach(time => {
+                    availableSlotsHTML += `
+                      <label style="display: block; margin-bottom: 8px;">
+                        <input type="radio" name="newSelectedTime" value="${time}" data-slot-id="${slot.id}" style="margin-right: 8px;">
+                        ${time}
+                      </label>
+                    `;
+                  });
+                }
+              });
+              
+              if (availableSlotsHTML === '') {
+                timeSlotsContainer.innerHTML = '<p>All slots are booked for this date.</p>';
+              } else {
+                timeSlotsContainer.innerHTML = availableSlotsHTML;
+              }
+            })
+            .catch(error => {
+              console.error('Error loading time slots:', error);
+              timeSlotsContainer.innerHTML = '<p>Error loading time slots.</p>';
+            });
+        })
+        .catch(error => {
+          console.error('Error fetching booking:', error);
+          alert('Error fetching booking details');
+        });
+    }
+
+    function confirmReschedule(bookingId) {
+      const date = document.getElementById('newAppointmentDate').value;
+      const selectedTimeRadio = document.querySelector('input[name="newSelectedTime"]:checked');
+      const reason = document.getElementById('rescheduleReason').value;
+      
+      if (!date) {
+        alert('Please select a date');
+        return;
+      }
+      
+      if (!selectedTimeRadio) {
+        alert('Please select a time slot');
+        return;
+      }
+      
+      const bookedTime = selectedTimeRadio.value;
+      const timeSlotId = selectedTimeRadio.getAttribute('data-slot-id');
+      
+      // Validate time format
+      const timeRegex = /^([0-1]?[0-9]|2[0-3])[.:][0-5][0-9]$/;
+      if (!timeRegex.test(bookedTime)) {
+        alert('Please select a valid time slot');
+        return;
+      }
+      
+      // Show loading
+      const submitBtn = document.querySelector('#rescheduleForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Rescheduling...';
+      submitBtn.disabled = true;
+      
+      // First cancel the old booking
+      fetch(`/api/bookings/${bookingId}/status/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({ status: 'cancelled' })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to cancel old booking: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(() => {
+        // Then create new booking with same user and doctor
+        return fetch(`/api/bookings/${bookingId}/`)
+          .then(res => res.json())
+          .then(oldBooking => {
+            const userId = localStorage.getItem('user_id');
+            const bookingData = {
+              time_slot_id: parseInt(timeSlotId),
+              booked_time: bookedTime,
+              symptoms: oldBooking.symptoms || 'Rescheduled appointment',
+              notes: reason || `Rescheduled from original booking. ${oldBooking.notes || ''}`,
+              doctor_id: oldBooking.doctor
+            };
+            
+            return fetch(`/api/users/${userId}/bookings/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+              },
+              body: JSON.stringify(bookingData)
+            });
+          });
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to create new booking: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Appointment rescheduled successfully!');
+        localStorage.removeItem('reschedule_booking_id');
+        localStorage.removeItem('appointments_original');
+        // Return to appointments view
+        showAppointments();
+      })
+      .catch(error => {
+        console.error('Error rescheduling:', error);
+        alert(`Error rescheduling appointment: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    function addNotesToAppointment(bookingId) {
+      // Store booking ID for adding notes
+      localStorage.setItem('notes_booking_id', bookingId);
+      
+      // Show notes form
+      const appointmentSection = document.getElementById('appointmentsSection');
+      const originalContent = appointmentSection.innerHTML;
+      
+      // Save original content for later
+      localStorage.setItem('appointments_original', originalContent);
+      
+      // Create notes form
+      appointmentSection.innerHTML = `
+        <h2 class="section-title">Add Notes to Appointment</h2>
+        <div class="card">
+          <div style="margin-bottom: 15px;">
+            <button onclick="cancelAddNotes()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Appointments</button>
+          </div>
+          
+          <form id="notesForm">
+            <div class="form-group">
+              <label>Additional Notes</label>
+              <textarea id="appointmentNotes" rows="4" placeholder="Add any additional information, symptoms, or questions for the doctor..." required></textarea>
+            </div>
+            
+            <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Save Notes</button>
+          </form>
+        </div>
+      `;
+      
+      // Add form submit handler
+      document.getElementById('notesForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAppointmentNotes(bookingId);
+      });
+    }
+
+    function cancelAddNotes() {
+      // Restore original appointments view
+      const appointmentSection = document.getElementById('appointmentsSection');
+      const originalContent = localStorage.getItem('appointments_original');
+      if (originalContent) {
+        appointmentSection.innerHTML = originalContent;
+        localStorage.removeItem('appointments_original');
+        localStorage.removeItem('notes_booking_id');
+        // Reload appointments
+        loadUserAppointments();
+      } else {
+        // Fallback
+        showAppointments();
+      }
+    }
+
+    function saveAppointmentNotes(bookingId) {
+      const notes = document.getElementById('appointmentNotes').value;
+      
+      if (!notes) {
+        alert('Please enter some notes');
+        return;
+      }
+      
+      // Show loading
+      const submitBtn = document.querySelector('#notesForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Saving...';
+      submitBtn.disabled = true;
+      
+      // First get current booking data
+      fetch(`/api/bookings/${bookingId}/`)
+        .then(response => response.json())
+        .then(booking => {
+          // Update only the notes field
+          const formData = {
+            notes: booking.notes ? booking.notes + ' ' + notes : notes
+          };
+          
+          return fetch(`/api/bookings/${bookingId}/`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify(formData)
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          alert('Notes added successfully!');
+          localStorage.removeItem('notes_booking_id');
+          localStorage.removeItem('appointments_original');
+          // Return to appointments view
+          showAppointments();
+        })
+        .catch(error => {
+          console.error('Error saving notes:', error);
+          alert(`Error saving notes: ${error.message}`);
+        })
+        .finally(() => {
+          // Restore button
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        });
+    }
+
+    function cancelReschedule() {
+      // Restore original appointments view
+      const appointmentSection = document.getElementById('appointmentsSection');
+      const originalContent = localStorage.getItem('appointments_original');
+      if (originalContent) {
+        appointmentSection.innerHTML = originalContent;
+        localStorage.removeItem('appointments_original');
+        localStorage.removeItem('reschedule_booking_id');
+        // Reload appointments
+        loadUserAppointments();
+      } else {
+        // Fallback
+        showAppointments();
+      }
+    }
+
+    function showBookDetail(bookId) {
+      // Store book ID and navigate to book detail view
+      localStorage.setItem('current_book_id', bookId);
+      
+      // Hide books list, show book detail
+      document.getElementById('booksList').style.display = 'none';
+      
+      // Create and show book detail container
+      const booksContainer = document.querySelector('#booksSection .card');
+      
+      // Add back button and detail area
+      const detailHTML = `
+        <div style="margin-bottom: 15px;">
+          <button onclick="showBooksList()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Books</button>
+        </div>
+        <div id="bookDetailContent">
+          <p>Loading book details...</p>
+        </div>
+      `;
+      
+      // Add detail view after the filter buttons
+      const filterDiv = booksContainer.querySelector('div[style*="margin-bottom: 20px; display: flex; gap: 10px;"]');
+      if (filterDiv) {
+        filterDiv.insertAdjacentHTML('afterend', detailHTML);
+      }
+      
+      // Load book details
+      fetchBookDetails(bookId);
+    }
+
+    function fetchBookDetails(bookId) {
+      const detailContent = document.getElementById('bookDetailContent');
+      if (!detailContent) return;
+      
+      detailContent.innerHTML = '<p>Loading book details...</p>';
+      
+      // Fetch book details from API
+      fetch(`/api/user/books/${bookId}/`)
+        .then(response => response.json())
+        .then(book => {
+          let coverHTML = '';
+          if (book.cover_image) {
+            coverHTML = `<img src="${book.cover_image}" alt="${book.title}" style="max-width: 200px; max-height: 300px; border-radius: 8px; margin-bottom: 20px;">`;
+          }
+          
+          detailContent.innerHTML = `
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                ${coverHTML}
+              </div>
+              <div style="flex: 2; min-width: 300px;">
+                <h2 style="color: #f8fafc; margin-bottom: 15px;">${book.title}</h2>
+                <p><strong>Author:</strong> ${book.author}</p>
+                <p><strong>Category:</strong> ${book.category}</p>
+                <p><strong>Status:</strong> ${book.is_active ? 'Available' : 'Not Available'}</p>
+                <p><strong>Added on:</strong> ${new Date(book.created_at).toLocaleDateString()}</p>
+                
+                <div style="margin-top: 20px;">
+                  <h3 style="color: #cbd5e1; margin-bottom: 10px;">Description</h3>
+                  <p style="line-height: 1.6;">${book.description || 'No description available.'}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error('Error loading book details:', error);
+          detailContent.innerHTML = '<p style="color: #ef4444;">Error loading book details. Please try again.</p>';
+        });
+    }
+    
+    function showBooksList() {
+      // Show books list, hide detail view
+      document.getElementById('booksList').style.display = 'block';
+      
+      // Remove detail view if exists
+      const detailContent = document.getElementById('bookDetailContent');
+      const backButton = detailContent ? detailContent.previousElementSibling : null;
+      
+      if (backButton && backButton.tagName === 'DIV' && backButton.querySelector('button')) {
+        backButton.remove();
+      }
+      if (detailContent) {
+        detailContent.remove();
+      }
+      
+      // Reset filter button to "All Books" since we're returning to list
+      updateBookFilterButton('all');
+    }
+
+    function showMainDashboard() {
+      // Show main dashboard, hide other sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'block';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('myReviewsSection').style.display = 'none';
+      
+      // Hide assessment history section if it exists
+      const historySection = document.getElementById('assessmentHistorySection');
+      if (historySection) {
+        historySection.style.display = 'none';
+      }
+      
+      // Update active nav item to Nearby Doctors
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Set first nav item as active (Nearby Doctors)
+      const firstNavItem = document.querySelector('.sidebar .nav-item:first-child');
+      if (firstNavItem) {
+        firstNavItem.classList.add('active');
+      }
+    }
+
+    // Review functions
+    let currentDoctorId = null;
+    let currentDoctorName = '';
+
+    function showDoctorReviews(doctorId, doctorName) {
+      currentDoctorId = doctorId;
+      currentDoctorName = doctorName;
+      
+      // Update section title
+      document.getElementById('reviewsDoctorName').textContent = `Reviews for Dr. ${doctorName}`;
+      
+      // Hide all sections
+      document.getElementById('nearbyDoctorsSection').style.display = 'none';
+      document.getElementById('bookingFormSection').style.display = 'none';
+      document.getElementById('adhdaSection').style.display = 'none';
+      document.getElementById('anxietySection').style.display = 'none';
+      document.getElementById('appointmentsSection').style.display = 'none';
+      document.getElementById('booksSection').style.display = 'none';
+      document.getElementById('profileSection').style.display = 'none';
+      
+      // Show reviews section
+      document.getElementById('reviewsSection').style.display = 'block';
+      
+      // Load reviews
+      loadDoctorReviews(doctorId);
+    }
+
+    function hideReviews() {
+      document.getElementById('reviewsSection').style.display = 'none';
+      document.getElementById('nearbyDoctorsSection').style.display = 'block';
+    }
+
+    function loadDoctorReviews(doctorId) {
+      const reviewsList = document.getElementById('reviewsList');
+      reviewsList.innerHTML = '<p>Loading reviews...</p>';
+      
+      fetch(`/api/doctors/${doctorId}/feedback/`)
+        .then(response => response.json())
+        .then(data => {
+          const reviews = data.feedbacks || [];
+          const avgRating = data.average_rating || 0;
+          const totalReviews = data.total_feedbacks || 0;
+          
+          if (reviews.length === 0) {
+            reviewsList.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
+            return;
+          }
+          
+          let reviewsHTML = `
+            <div style="margin-bottom: 20px; padding: 15px; background: #1e293b; border-radius: 8px;">
+              <p><strong>Average Rating:</strong> ${avgRating} / 5 (${totalReviews} reviews)</p>
+            </div>
+          `;
+          
+          reviews.forEach(review => {
+            const date = new Date(review.created_at).toLocaleDateString();
+            reviewsHTML += `
+              <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <strong>${review.user_name}</strong>
+                  <span style="color: #fbbf24;">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+                </div>
+                <p style="color: #94a3b8; margin-bottom: 5px;">${review.comment}</p>
+                <small style="color: #6b7280;">${date}</small>
+              </div>
+            `;
+          });
+          
+          reviewsList.innerHTML = reviewsHTML;
+        })
+        .catch(error => {
+          console.error('Error loading reviews:', error);
+          reviewsList.innerHTML = '<p style="color: #ef4444;">Error loading reviews. Please try again.</p>';
+        });
+    }
+    
+    // Review form submission
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (!currentDoctorId) {
+        alert('No doctor selected');
+        return;
+      }
+      
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        alert('You must be logged in to submit a review');
+        return;
+      }
+      
+      const formData = {
+        rating: parseInt(document.getElementById('reviewRating').value),
+        comment: document.getElementById('reviewComment').value,
+        user_id: parseInt(userId)
+      };
+      
+      // Show loading
+      const submitBtn = document.querySelector('#reviewForm button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      
+      fetch(`/api/doctors/${currentDoctorId}/feedback/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(formData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        alert('Review submitted successfully!');
+        // Reset form
+        document.getElementById('reviewForm').reset();
+        // Reload reviews
+        loadDoctorReviews(currentDoctorId);
+      })
+      .catch(error => {
+        console.error('Error submitting review:', error);
+        alert(`Error submitting review: ${error.message}`);
+      })
+      .finally(() => {
+        // Restore button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });    
+    
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 #It converts database information to JSON for the web, and JSON back to database information.
 
 from rest_framework import serializers
-from .models import User, Doctor, DoctorFeedback, Booking, Book, TimeSlot, MoodLog
+from .models import *
 
 
 class LoginSerializer(serializers.Serializer):
@@ -12,11 +12,41 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+            'email': {'required': False}
+        }
+    
+    def update(self, instance, validated_data):
+        # Remove password if not provided (keep existing)
+        if 'password' not in validated_data or not validated_data['password']:
+            validated_data.pop('password', None)
+        
+        # If email not provided, keep existing
+        if 'email' not in validated_data:
+            validated_data['email'] = instance.email
+            
+        return super().update(instance, validated_data)
 
 class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Doctor
         fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+            'email': {'required': False}
+        }
+    
+    def update(self, instance, validated_data):
+        # Remove password if not provided (keep existing)
+        if 'password' not in validated_data or not validated_data['password']:
+            validated_data.pop('password', None)
+        
+        # If email not provided, keep existing
+        if 'email' not in validated_data:
+            validated_data['email'] = instance.email
+            
+        return super().update(instance, validated_data)
 
 class DoctorFeedbackSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.name', read_only=True)
@@ -64,4 +94,14 @@ class MoodLogSerializer(serializers.ModelSerializer):
         model = MoodLog
         fields = '__all__'
 
-
+class AssessmentResultSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    
+    class Meta:
+        model = AssessmentResult
+        fields = '__all__'
+        read_only_fields = ['created_at']
+    
+    def create(self, validated_data):
+        # Ensure user is set properly
+        return AssessmentResult.objects.create(**validated_data)

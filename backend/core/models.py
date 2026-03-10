@@ -131,3 +131,19 @@ class MoodLog(models.Model):
 
     def __str__(self):
         return f"{self.user.name} - {self.mood} ({self.created_at.date()})"
+
+class AssessmentResult(models.Model):
+    ASSESSMENT_TYPES = [
+        ('adhd', 'ADHD Assessment'),
+        ('anxiety', 'Anxiety Assessment'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assessments')
+    assessment_type = models.CharField(max_length=20, choices=ASSESSMENT_TYPES)
+    result = models.CharField(max_length=100)  # e.g., "ADHD", "No ADHD", "YES", "Bipolar Type 1"
+    confidence = models.FloatField()  # confidence score 0-1
+    details = models.JSONField(null=True, blank=True)  # store all input features and probabilities
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.name} - {self.get_assessment_type_display()} - {self.result} ({self.created_at.date()})"

@@ -355,7 +355,7 @@
 
     async function loadDoctors() {
       try {
-        const response = await fetch('http://127.0.0.1:8001/api/doctors/', {
+        const response = await fetch('http://127.0.0.1:8003/api/doctors/', {
           credentials: 'include'
         });
 
@@ -519,7 +519,7 @@
       try {
         showMessage('Loading doctor details...', 'success');
         
-        const response = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+        const response = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
           credentials: 'include'
         });
         
@@ -616,7 +616,7 @@
           showMessage(`Approving doctor ${doctorId}...`, 'success');
           
           // First get current doctor data
-          const getResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          const getResponse = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
             credentials: 'include'
           });
           
@@ -630,7 +630,7 @@
           doctor.status = 'approved';
           
           // Send updated doctor data
-          const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          const putResponse = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -662,7 +662,7 @@
           showMessage(`Rejecting doctor ${doctorId}...`, 'success');
           
           // First get current doctor data
-          const getResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          const getResponse = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
             credentials: 'include'
           });
           
@@ -676,7 +676,7 @@
           doctor.status = 'rejected';  // Change this line from 'approved' to 'rejected'
           
           // Send updated doctor data
-          const putResponse = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          const putResponse = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -707,7 +707,7 @@
         try {
           showMessage(`Deleting doctor ${doctorId}...`, 'success');
           
-          const response = await fetch(`http://127.0.0.1:8001/api/doctors/${doctorId}/`, {
+          const response = await fetch(`http://127.0.0.1:8003/api/doctors/${doctorId}/`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {

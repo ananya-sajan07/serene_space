@@ -5,17 +5,98 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from .adhd_prediction import predict_adhd
-from .models import User, Doctor, DoctorFeedback, Booking,TimeSlot, Book, MoodLog
-from .serializers import UserSerializer, DoctorSerializer,DoctorFeedbackSerializer, BookingSerializer, TimeSlotSerializer, BookSerializer, MoodLogSerializer
+from .models import *
+from .serializers import *
+
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+import google.generativeai as genai
+from rest_framework.views import APIView
+
+# -----------------------------------------------------------
+# Load Gemini API Key
+# -----------------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+
+load_dotenv(ENV_PATH)
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# Debug print (masked)
+print("Loaded GOOGLE_API_KEY:", "FOUND" if GOOGLE_API_KEY else "NOT FOUND")
+print("ENV_PATH:", ENV_PATH)
+print("File exists:", os.path.exists(ENV_PATH))
+
+# Configure Gemini
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+else:
+    print("WARNING: GOOGLE_API_KEY not found. Chatbot will not work.")
+
+# -----------------------------------------------------------
+# Mental Health Keywords Filter
+# -----------------------------------------------------------
+MENTAL_HEALTH_KEYWORDS = [
+    # General mental health
+    "mental health", "wellness", "well-being", "counseling", "therapy",
+    "psychologist", "psychiatrist", "therapist", "counselor",
+    
+    # Conditions
+    "depression", "depressed", "sadness", "hopeless", "worthless",
+    "anxiety", "anxious", "worry", "panic", "fear", "nervous",
+    "stress", "stressed", "overwhelmed", "burnout", "pressure",
+    "adhd", "attention deficit", "hyperactivity", "focus", "distracted",
+    "bipolar", "mood swings", "mania", "hypomania",
+    "ocd", "obsessive", "compulsive", "intrusive thoughts",
+    "ptsd", "trauma", "flashbacks", "nightmares",
+    "eating disorder", "anorexia", "bulimia", "body image",
+    "insomnia", "sleep", "tired", "exhausted", "fatigue",
+    
+    # Symptoms
+    "lonely", "loneliness", "isolated", "alone",
+    "anger", "irritable", "frustrated", "rage",
+    "grief", "loss", "bereavement", "mourning",
+    "guilt", "shame", "regret",
+    "hopeless", "helpless", "worthless",
+    "suicidal", "self-harm", "hurt myself", "end it all",
+    
+    # Emotions
+    "happy", "sad", "angry", "scared", "confused",
+    "emotional", "feelings", "mood", "feeling",
+    
+    # Relationships
+    "relationship", "family", "friends", "social",
+    "breakup", "divorce", "conflict", "argument",
+    
+    # Self-care
+    "self-care", "mindfulness", "meditation", "relaxation",
+    "breathing", "coping", "strategies", "tips",
+    
+    # Help
+    "help", "advice", "suggestion", "recommend", "guide",
+    "support", "resources", "hotline", "crisis",
+    
+    # Common questions
+    "what is", "how to", "why do", "can you", "tell me",
+    "hello", "hi", "hey", "thanks", "thank you"
+]
+
+def is_mental_health_related(text):
+    """Check if message is related to mental health."""
+    text = text.lower()
+    return any(keyword in text for keyword in MENTAL_HEALTH_KEYWORDS)
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
@@ -24,6 +105,7 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login(request):
     email = request.data.get('email')
     password = request.data.get('password')
@@ -93,6 +175,7 @@ class DoctorViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorSerializer
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def doctor_register(request):
     serializer = DoctorSerializer(data=request.data)
     if serializer.is_valid():
@@ -101,6 +184,7 @@ def doctor_register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def predict_adhd_api(request):
     """
     API endpoint for ADHD prediction using trained ML model
@@ -191,6 +275,7 @@ def predict_adhd_api(request):
         )
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def predict_anxiety_api(request):
     '''
     API endpoint for Anxiety prediction using trained ML model
@@ -254,16 +339,18 @@ def predict_anxiety_api(request):
         # Define anxiety levels based on model output
         anxiety_levels = {
             0: "NO (No Anxiety)",
-            1: "YES (Mild Anxiety)", 
-            2: "Moderate Anxiety",
-            3: "Severe Anxiety"
+            1: "YES (Has Anxiety)", 
+            2: "Bipolar Type 1",
+            3: "Bipolar Type 2"
         }
         
         # Get prediction label
         prediction_label = anxiety_levels.get(prediction_encoded, f"Level_{prediction_encoded}")
         
+
         # Also get the simple YES/NO from encoder if available
         simple_label = "NO"
+        
         if prediction_encoded < len(label_encoder.classes_):
             simple_label = label_encoder.inverse_transform([prediction_encoded])[0]
         
@@ -279,7 +366,7 @@ def predict_anxiety_api(request):
                 label = f"Level_{i}"
             probabilities[label] = float(prob)
         
-        # Prepare response
+        # Preparing response
         result = {
             "prediction_encoded": int(prediction_encoded),
             "prediction_label": prediction_label,
@@ -904,6 +991,165 @@ class MoodLogViewSet(viewsets.ModelViewSet):
     queryset = MoodLog.objects.all()
     serializer_class = MoodLogSerializer
 
+@api_view(['POST'])
+def save_assessment_result(request):
+    """
+    API to save assessment result after ADHD/Anxiety prediction
+    """
+    try:
+        print("="*50)
+        print("SAVE ASSESSMENT REQUEST RECEIVED")
+        print("Request data:", request.data)
+        
+        user_id = request.data.get('user_id')
+        if not user_id:
+            print("ERROR: No user_id provided")
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        print(f"User ID: {user_id}")
+        user = User.objects.get(id=user_id)
+        print(f"User found: {user.name}")
+        
+        # Create assessment result
+        data = {
+            'user': user.id,
+            'assessment_type': request.data.get('assessment_type'),
+            'result': request.data.get('result'),
+            'confidence': request.data.get('confidence'),
+            'details': request.data.get('details', {})
+        }
+        print("Data to save:", data)
+        
+        serializer = AssessmentResultSerializer(data=data)
+        if serializer.is_valid():
+            print("Serializer is valid")
+            serializer.save()
+            print("Assessment saved successfully")
+            return Response({
+                "message": "Assessment result saved successfully",
+                "assessment": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        else:
+            print("Serializer errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    except User.DoesNotExist:
+        print(f"ERROR: User with ID {user_id} not found")
+        return Response({"error": f"User with ID {user_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(f"EXCEPTION: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+def get_user_assessments_api(request, user_id):
+    """
+    API to get all assessments for a user
+    """
+    try:
+        user = User.objects.get(id=user_id)
+        assessments = AssessmentResult.objects.filter(user=user).order_by('-created_at')
+        serializer = AssessmentResultSerializer(assessments, many=True)
+        return Response({
+            "user_id": user.id,
+            "user_name": user.name,
+            "count": len(assessments),
+            "assessments": serializer.data
+        })
+    except User.DoesNotExist:
+        return Response({"error": f"User with ID {user_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+@api_view(['GET', 'DELETE'])
+def assessment_detail_api(request, assessment_id):
+    """
+    API to get or delete a specific assessment
+    """
+    try:
+        assessment = AssessmentResult.objects.get(id=assessment_id)
+        
+        if request.method == 'GET':
+            serializer = AssessmentResultSerializer(assessment)
+            return Response(serializer.data)
+            
+        elif request.method == 'DELETE':
+            assessment.delete()
+            return Response({"message": "Assessment deleted successfully"})
+            
+    except AssessmentResult.DoesNotExist:
+        return Response({"error": f"Assessment with ID {assessment_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# -----------------------------------------------------------
+# Mental Health Chatbot API
+# -----------------------------------------------------------
+
+class MentalHealthChatAPIView(APIView):
+    """
+    API endpoint for mental health chatbot using Gemini
+    """
+    
+    def post(self, request):
+        user_message = request.data.get("message")
+        
+        if not user_message:
+            return Response({"error": "Message is required"}, status=400)
+        
+        # Check if API key is configured
+        if not GOOGLE_API_KEY:
+            return Response({
+                "error": "Chatbot service not configured"
+            }, status=500)
+        
+        # Filter unrelated topics
+        if not is_mental_health_related(user_message):
+            return Response({
+                "reply": "I'm a mental health assistant and can only answer questions related to mental wellness, emotions, psychological conditions, and self-care. How can I support your mental health today?"
+            })
+        
+        try:
+            prompt = f"""
+            You are SereneBot, a compassionate mental health assistant. You provide supportive, 
+            empathetic, and helpful responses about mental wellness, emotions, psychological conditions,
+            and self-care strategies. You are not a replacement for professional medical help.
+
+            Important guidelines:
+            - Be empathetic and non-judgmental
+            - Provide practical coping strategies when appropriate
+            - If someone mentions self-harm or suicidal thoughts, encourage them to seek immediate professional help
+            - Suggest resources like therapists, hotlines, or support groups
+            - Keep responses concise and helpful (under 150 words)
+            - Only answer questions related to mental health and wellness
+
+            User: {user_message}
+            
+            SereneBot:"""
+            
+            # Use Gemini model
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            response = model.generate_content(prompt)
+            
+            return Response({"reply": response.text})
+            
+        except Exception as e:
+            print(f"Gemini API Error: {str(e)}")
+            return Response({
+                "error": f"Chatbot service error: {str(e)}"
+            }, status=500)
+
+
+# Simple test endpoint
+class ChatbotTestAPIView(APIView):
+    """
+    Simple test endpoint to verify chatbot is working
+    """
+    
+    def get(self, request):
+        return Response({
+            "message": "Chatbot API is working. Send a POST request with {'message': 'your question'}"
+        })

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Serene Space — Doctor Portal (Testing Only)</title>
+  <title>Serene Space — Doctor Portal</title>
   <style>
     * {
       margin: 0;
@@ -156,7 +156,7 @@
     
     <div class="logo">
       <h1>Serene Space</h1>
-      <div class="subtitle">Doctor Portal (Testing Only)</div>
+      <div class="subtitle">Doctor Login & Registration Portal</div>
     </div>
     
     <div class="auth-tabs">
@@ -254,11 +254,11 @@
       </div>
 
       <button type="submit" class="auth-btn">Register as Doctor</button>
+
+      <p style="color: #94a3b8; font-size: 12px; margin-top: 15px; text-align: center;">
+          Note: Doctor registration requires admin approval. After registering, please ask the admin to approve your account, then log in.
+      </p>
     </form>
-    
-    <div class="note">
-      This is only a testing page. Not for Production.
-    </div>
     
   </div>
 
@@ -356,9 +356,23 @@
           } else {
             showMessage(`Login failed: ${data.error || data.message || 'Invalid credentials'}`, 'error');
           }
+        } else if (result.status === 401) {
+      // Special handling for "not approved yet" message
+      let errorMsg = 'Login failed. ';
+      try {
+        const data = JSON.parse(result.raw);
+        if (data.error && data.error.includes('not Approved')) {
+          errorMsg = '⚠️ Your doctor account is not approved yet. Please wait for admin approval or contact the administrator.';
         } else {
-          showMessage(`Login failed (Status: ${result.status}): ${result.raw}`, 'error');
+          errorMsg += data.error || result.raw;
         }
+      } catch(e) {
+        errorMsg += result.raw;
+      }
+      showMessage(errorMsg, 'error');
+    } else {
+      showMessage(`Login failed: ${result.raw}`, 'error');
+    }
       })
       .catch(error => {
         console.error('Login error:', error);

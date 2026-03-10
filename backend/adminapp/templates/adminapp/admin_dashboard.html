@@ -354,12 +354,12 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
       try 
       {
         // Fetch users data
-        const usersResponse = await fetch('http://127.0.0.1:8001/api/users/', {
+        const usersResponse = await fetch('/api/users/', {
           credentials: 'include'
         });
 
         // Fetch doctors data
-        const doctorsResponse = await fetch('http://127.0.0.1:8001/api/doctors/', {
+        const doctorsResponse = await fetch('/api/doctors/', {
           credentials: 'include'
         });
 
@@ -401,7 +401,7 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
 
     async function loadRecentUsers() {
       try {
-        const response = await fetch('http://127.0.0.1:8001/api/users/', {
+        const response = await fetch('/api/users/', {
           credentials: 'include'
         });
         
@@ -422,6 +422,7 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
           
           // Sort users: Admins first (newest first), then regular users (newest first)
           const sortedUsers = users.sort((a, b) => {
+            
             // First sort by admin status (admins first)
             if (a.is_admin && !b.is_admin) return -1;
             if (!a.is_admin && b.is_admin) return 1;
@@ -430,8 +431,9 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
             return new Date(b.created_at) - new Date(a.created_at);
           });
 
-          // Show only first 5 users from sorted list
-          const recentUsers = sortedUsers.slice(0, 5);
+          // Show ALL users (not just first 5)
+          const recentUsers = sortedUsers; // Removed .slice(0, 5)
+
           let html = '';
 
           recentUsers.forEach((user, index) => {
@@ -471,7 +473,7 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
       try {
         showMessage('Loading user details...', 'success');
         
-        const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
+        const response = await fetch(`/api/users/${userId}/`, {
           credentials: 'include'
         });
         
@@ -562,7 +564,7 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
     try {
       showMessage(`Deleting user ${userId}...`, 'success');
       
-      const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
+      const response = await fetch(`/api/users/${userId}/`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
@@ -602,7 +604,7 @@ async function editUser(userId) {
   try {
     showMessage('Loading user data...', 'success');
     
-    const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
+    const response = await fetch(`/api/users/${userId}/`, {
       credentials: 'include'
     });
     
@@ -658,7 +660,7 @@ document.getElementById('editUserForm').addEventListener('submit', async functio
       is_admin: is_admin
     };
     
-    const response = await fetch(`http://127.0.0.1:8001/api/users/${userId}/`, {
+    const response = await fetch(`/api/users/${userId}/`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
