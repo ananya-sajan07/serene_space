@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',  # Add this
     'rest_framework', 
     'core',
     'corsheaders',
@@ -62,7 +63,7 @@ ROOT_URLCONF = 'serene_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -163,4 +164,14 @@ CSRF_USE_SESSIONS = False
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': [],
+}
+
+# Channels settings
+ASGI_APPLICATION = 'serene_backend.asgi.application'
+
+# Use in-memory channel layer for development
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
 }

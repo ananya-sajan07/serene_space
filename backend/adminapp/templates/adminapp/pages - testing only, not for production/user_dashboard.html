@@ -778,10 +778,11 @@
                     <span style="color: #94a3b8; margin-left: 5px;">(${rating.avgRating.toFixed(1)}/5 - ${rating.totalReviews} reviews)</span>
                   </p>
                   <p><strong>Available:</strong> ${doctor.available ? 'Yes' : 'No'}</p>
-                  <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button onclick="showBookingForm(${doctor.id}, '${doctor.name}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Book Appointment</button>
-                    <button onclick="showDoctorReviews(${doctor.id}, '${doctor.name}')" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">View Reviews (${rating.totalReviews})</button>
-                  </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                      <button onclick="showBookingForm(${doctor.id}, '${doctor.name}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Book Appointment</button>
+                      <button onclick="showDoctorReviews(${doctor.id}, '${doctor.name}')" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Reviews (${rating.totalReviews})</button>
+                      <button onclick="startUserChat(${doctor.id}, '${doctor.name}')" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;"> Chat</button>
+                    </div>
                 </div>
               </div>
             `;
@@ -1736,6 +1737,28 @@
       window.open(`/api/prescriptions/${prescriptionId}/download/`, '_blank');
     }
 
+    function startUserChat(doctorId, doctorName) {
+      const userId = localStorage.getItem('user_id');
+      const userName = localStorage.getItem('user_name');
+      
+      if (!userId) {
+        alert('Please log in to chat with doctors');
+        return;
+      }
+      
+      // Create unique room name using doctor and user IDs
+      const roomName = `doctor_${doctorId}_patient_${userId}`;
+      
+      // Store chat info in localStorage
+      localStorage.setItem('current_chat_room', roomName);
+      localStorage.setItem('chat_doctor_name', doctorName);
+      localStorage.setItem('chat_doctor_id', doctorId);
+      
+      // Open chat in new window
+      const chatUrl = `/chat/?room=${roomName}&user=${encodeURIComponent(userName)}&other=${encodeURIComponent(doctorName)}&role=patient`;
+      window.open(chatUrl, '_blank', 'width=400,height=600');
+    }
+
     function showBooks() {
       // Hide all sections
       document.getElementById('nearbyDoctorsSection').style.display = 'none';
@@ -2081,7 +2104,23 @@
               
               <div class="form-group">
                 <label>District</label>
-                <input type="text" id="editPlace" value="${user.place || ''}">
+                <select id="editPlace" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white;">
+                  <option value="">Select your district</option>
+                  <option value="Alappuzha" ${user.place === 'Alappuzha' ? 'selected' : ''}>Alappuzha</option>
+                  <option value="Ernakulam" ${user.place === 'Ernakulam' ? 'selected' : ''}>Ernakulam</option>
+                  <option value="Idukki" ${user.place === 'Idukki' ? 'selected' : ''}>Idukki</option>
+                  <option value="Kannur" ${user.place === 'Kannur' ? 'selected' : ''}>Kannur</option>
+                  <option value="Kasaragod" ${user.place === 'Kasaragod' ? 'selected' : ''}>Kasaragod</option>
+                  <option value="Kollam" ${user.place === 'Kollam' ? 'selected' : ''}>Kollam</option>
+                  <option value="Kottayam" ${user.place === 'Kottayam' ? 'selected' : ''}>Kottayam</option>
+                  <option value="Kozhikode" ${user.place === 'Kozhikode' ? 'selected' : ''}>Kozhikode</option>
+                  <option value="Malappuram" ${user.place === 'Malappuram' ? 'selected' : ''}>Malappuram</option>
+                  <option value="Palakkad" ${user.place === 'Palakkad' ? 'selected' : ''}>Palakkad</option>
+                  <option value="Pathanamthitta" ${user.place === 'Pathanamthitta' ? 'selected' : ''}>Pathanamthitta</option>
+                  <option value="Thiruvananthapuram" ${user.place === 'Thiruvananthapuram' ? 'selected' : ''}>Thiruvananthapuram</option>
+                  <option value="Thrissur" ${user.place === 'Thrissur' ? 'selected' : ''}>Thrissur</option>
+                  <option value="Wayanad" ${user.place === 'Wayanad' ? 'selected' : ''}>Wayanad</option>
+                </select>
               </div>
               
               <div class="form-group">

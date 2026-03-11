@@ -1432,3 +1432,11 @@ class ChatbotTestAPIView(APIView):
         return Response({
             "message": "Chatbot API is working. Send a POST request with {'message': 'your question'}"
         })
+    
+from django.shortcuts import render
+
+def chat_view(request):
+    """
+    View to serve the chat HTML page
+    """
+    return render(request, 'adminapp/chat.html')

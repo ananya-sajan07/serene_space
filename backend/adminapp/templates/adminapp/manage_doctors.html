@@ -276,7 +276,7 @@
             <th>Specialization</th>
             <th>Hospital</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th style="min-width: 280px;">Actions</th>
           </tr>
         </thead>
         <tbody id="doctorsTable">
@@ -480,19 +480,20 @@
             <td>${doctor.hospital_name || 'N/A'}</td>
             <td>${statusBadge}</td>
             <td>
-              <button class="action-btn view-btn" onclick="viewDoctorDetails(${doctor.id})">View</button>
-              ${doctor.status === 'pending' ? `
-                <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
-                <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
-              ` : ''}
-              ${doctor.status === 'approved' ? `
-                <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
-              ` : ''}
-
-              ${doctor.status === 'rejected' ? `
-                <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
-              ` : ''}
-              <button class="action-btn delete-btn" onclick="deleteDoctor(${doctor.id})">Delete</button>
+              <div style="display: flex; gap: 5px; flex-wrap: nowrap; align-items: center;">
+                <button class="action-btn view-btn" onclick="viewDoctorDetails(${doctor.id})">View</button>
+                ${doctor.status === 'pending' ? `
+                  <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
+                  <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
+                ` : ''}
+                ${doctor.status === 'approved' ? `
+                  <button class="action-btn reject-btn" onclick="rejectDoctor(${doctor.id})">Reject</button>
+                ` : ''}
+                ${doctor.status === 'rejected' ? `
+                  <button class="action-btn approve-btn" onclick="approveDoctor(${doctor.id})">Approve</button>
+                ` : ''}
+                <button class="action-btn delete-btn" onclick="deleteDoctor(${doctor.id})">Delete</button>
+              </div>
             </td>
           </tr>
         `;

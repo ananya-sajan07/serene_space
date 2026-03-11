@@ -319,10 +319,91 @@
             <div class="form-group">
               <label>Available Time Slots</label>
               <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">
-                Enter time slots separated by commas (e.g., 9.00, 10.00, 11.00, 14.00, 15.00, 16.00)<br>
-                Format: HH.MM (24-hour)
+                Select the time slots you are available:
               </p>
-              <input type="text" id="timeSlots" placeholder="9.00, 10.00, 11.00, 14.00, 15.00, 16.00" required>
+              <div style="margin-bottom: 15px;">
+                <label style="color: #94a3b8; font-size: 14px; margin-bottom: 5px; display: block;">Select Time Slots (24-hour format):</label>
+              </div>
+              
+              <!-- Morning Hours (6 AM - 11 AM) -->
+              <div style="margin-bottom: 10px;">
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 5px;">Morning</p>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="6.00"> 6:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="7.00"> 7:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="8.00"> 8:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="9.00"> 9:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="10.00"> 10:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="11.00"> 11:00
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Afternoon Hours (12 PM - 5 PM) -->
+              <div style="margin-bottom: 10px;">
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 5px;">Afternoon</p>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="12.00"> 12:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="13.00"> 13:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="14.00"> 14:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="15.00"> 15:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="16.00"> 16:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="17.00"> 17:00
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Evening Hours (6 PM - 11 PM) -->
+              <div style="margin-bottom: 10px;">
+                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 5px;">Evening</p>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;">
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="18.00"> 18:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="19.00"> 19:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="20.00"> 20:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="21.00"> 21:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="22.00"> 22:00
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 3px; background: #1e293b; padding: 6px; border-radius: 4px; font-size: 13px;">
+                    <input type="checkbox" class="time-slot" value="23.00"> 23:00
+                  </label>
+                </div>
+              </div>
+              <div style="margin-top: 15px;">
+                <button type="button" onclick="selectAllSlots()" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 10px;">Select All</button>
+                <button type="button" onclick="clearAllSlots()" style="background: #6b7280; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Clear All</button>
+              </div>
+              <input type="hidden" id="timeSlots" value="">
             </div>
             
             <button type="submit" class="submit-btn">Save Time Slots</button>
@@ -363,7 +444,7 @@
           </div>
           
           <!-- Issued Prescriptions -->
-          <h3>Issued Prescriptions</h3>
+          <h3>Issued Prescriptions</h3><br>
           <div id="doctorPrescriptionsList">
             <p>Loading prescriptions...</p>
           </div>
@@ -406,8 +487,10 @@
     }
 
     function viewPrescription(prescriptionId) {
-      alert("View Prescription #" + prescriptionId);
-      // In future, this could open a detailed view
+      console.log("viewPrescription called with ID:", prescriptionId);
+      setTimeout(function() {
+        alert("View Prescription #" + prescriptionId);
+      }, 100);
     }
 
     // Load doctor data from localStorage
@@ -422,7 +505,8 @@
         return;
       }
       
-      document.getElementById('doctorName').textContent = doctorName ? `Dr. ${doctorName}` : 'Dr. Unknown';
+      // Display doctor name as-is (they already include "Dr." in registration)
+      document.getElementById('doctorName').textContent = doctorName || 'Dr. Unknown';
       document.getElementById('doctorAvatar').textContent = doctorName ? doctorName.charAt(0).toUpperCase() : 'D';
       
       // Load initial data
@@ -675,7 +759,7 @@
       }
     
       if (!timeSlotsInput) {
-        alert('Please enter time slots');
+        alert('Please select at least one time slot');
         return;
       }
     
@@ -836,8 +920,12 @@
                   <p> ${patient.bookingsCount} session(s) completed</p>
                   <p>Patient ID: ${patient.id}</p>
                 </div>
-                <div>
-                  <button class="action-btn btn-complete">View History</button>
+                <div style="display: flex; gap: 10px;">
+                  <button class="action-btn btn-complete" onclick="viewPatientHistory(${patient.id})">History</button>
+                  <button class="action-btn" style="background: #8b5cf6; color: white;" 
+                          onclick="startChat(${patient.id}, '${patient.name}')">
+                     Chat
+                  </button>
                 </div>
               </div>
             `;
@@ -912,17 +1000,25 @@
             return;
           }
           
-          let html = '<p>Found ' + prescriptions.length + ' prescriptions:</p>';
+          let html = '';
           prescriptions.forEach(p => {
             const date = new Date(p.issued_date).toLocaleDateString();
-            html += '<div style="background: #1e293b; padding: 10px; margin-bottom: 10px; border-radius: 6px;">';
-            html += '<p><strong>Patient:</strong> ' + p.user_name + '</p>';
-            html += '<p><strong>Date:</strong> ' + date + '</p>';
-            html += '<p><strong>Diagnosis:</strong> ' + p.diagnosis + '</p>';
-            html += '<button onclick="alert(\'Viewing prescription ' + p.id + '\')" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">View</button>';
-            html += '</div>';
+            html += `
+              <div class="card" style="margin-bottom: 15px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <p><strong>Patient:</strong> ${p.user_name}</p>
+                    <p><strong>Date:</strong> ${date}</p>
+                    <p><strong>Diagnosis:</strong> ${p.diagnosis}</p>
+                  </div>
+                  <button onclick="viewPrescription(${p.id})" 
+                          style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
+                    View
+                  </button>
+                </div>
+              </div>
+            `;
           });
-          prescriptionsList.innerHTML = html;
           prescriptionsList.innerHTML = html;
         })
         .catch(error => {
@@ -931,6 +1027,36 @@
         });
     }
     
+    function selectAllSlots() {
+      document.querySelectorAll('.time-slot').forEach(checkbox => {
+        checkbox.checked = true;
+      });
+      updateTimeSlotsHidden();
+    }
+
+    function clearAllSlots() {
+      document.querySelectorAll('.time-slot').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      updateTimeSlotsHidden();
+    }
+
+    function updateTimeSlotsHidden() {
+      const selectedSlots = [];
+      document.querySelectorAll('.time-slot:checked').forEach(checkbox => {
+        selectedSlots.push(checkbox.value);
+      });
+      document.getElementById('timeSlots').value = selectedSlots.join(', ');
+      console.log('Selected slots:', selectedSlots.join(', '));
+    }
+
+    // Add event listeners to checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.time-slot').forEach(checkbox => {
+        checkbox.addEventListener('change', updateTimeSlotsHidden);
+      });
+    });
+
     function showPrescriptionForm(bookingId, userId, patientName) {
       // Hide the prescriptions list and show form
       document.getElementById('completedAppointmentsList').style.display = 'none';
@@ -1168,7 +1294,7 @@
         .then(response => response.json())
         .then(doctor => {
           profileInfo.innerHTML = `
-            <h3>Dr. ${doctor.name || 'Name'}</h3>
+            <h3>${doctor.name || 'Name'}</h3>
             <p><strong>Email:</strong> ${doctor.email || 'N/A'}</p>
             <p><strong>Specialization:</strong> ${doctor.specialization || 'Not specified'}</p>
             <p><strong>Experience:</strong> ${doctor.experience || '0'} years</p>
@@ -1241,8 +1367,24 @@
               </div>
               
               <div class="form-group">
-                <label>Place/Location</label>
-                <input type="text" id="editPlace" value="${doctor.place || ''}">
+                <label>District</label>
+                <select id="editPlace" style="width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: white;">
+                  <option value="">Select your district</option>
+                  <option value="Alappuzha" ${doctor.place === 'Alappuzha' ? 'selected' : ''}>Alappuzha</option>
+                  <option value="Ernakulam" ${doctor.place === 'Ernakulam' ? 'selected' : ''}>Ernakulam</option>
+                  <option value="Idukki" ${doctor.place === 'Idukki' ? 'selected' : ''}>Idukki</option>
+                  <option value="Kannur" ${doctor.place === 'Kannur' ? 'selected' : ''}>Kannur</option>
+                  <option value="Kasaragod" ${doctor.place === 'Kasaragod' ? 'selected' : ''}>Kasaragod</option>
+                  <option value="Kollam" ${doctor.place === 'Kollam' ? 'selected' : ''}>Kollam</option>
+                  <option value="Kottayam" ${doctor.place === 'Kottayam' ? 'selected' : ''}>Kottayam</option>
+                  <option value="Kozhikode" ${doctor.place === 'Kozhikode' ? 'selected' : ''}>Kozhikode</option>
+                  <option value="Malappuram" ${doctor.place === 'Malappuram' ? 'selected' : ''}>Malappuram</option>
+                  <option value="Palakkad" ${doctor.place === 'Palakkad' ? 'selected' : ''}>Palakkad</option>
+                  <option value="Pathanamthitta" ${doctor.place === 'Pathanamthitta' ? 'selected' : ''}>Pathanamthitta</option>
+                  <option value="Thiruvananthapuram" ${doctor.place === 'Thiruvananthapuram' ? 'selected' : ''}>Thiruvananthapuram</option>
+                  <option value="Thrissur" ${doctor.place === 'Thrissur' ? 'selected' : ''}>Thrissur</option>
+                  <option value="Wayanad" ${doctor.place === 'Wayanad' ? 'selected' : ''}>Wayanad</option>
+                </select>
               </div>
               
               <div class="form-group">
@@ -1327,7 +1469,7 @@
         // Update localStorage with new name if changed
         if (updatedDoctor.name) {
           localStorage.setItem('doctor_name', updatedDoctor.name);
-          document.getElementById('doctorName').textContent = `Dr. ${updatedDoctor.name}`;
+          document.getElementById('doctorName').textContent = updatedDoctor.name;
           document.getElementById('doctorAvatar').textContent = updatedDoctor.name.charAt(0).toUpperCase();
         }
         // Update specialization badge
@@ -1351,6 +1493,28 @@
     function logout() {
       localStorage.clear();
       window.location.href = '/admin/doctor_auth/';
+    }
+
+    function startChat(patientId, patientName) {
+      const doctorId = localStorage.getItem('doctor_id');
+      const doctorName = localStorage.getItem('doctor_name');
+      
+      // Create unique room name using doctor and patient IDs
+      const roomName = `doctor_${doctorId}_patient_${patientId}`;
+      
+      // Store chat info in localStorage
+      localStorage.setItem('current_chat_room', roomName);
+      localStorage.setItem('chat_patient_name', patientName);
+      localStorage.setItem('chat_patient_id', patientId);
+      
+      // Open chat in new window or show chat section
+      const chatUrl = `/chat/?room=${roomName}&user=${encodeURIComponent(doctorName)}&other=${encodeURIComponent(patientName)}&role=doctor`;
+      window.open(chatUrl, '_blank', 'width=400,height=600');
+    }
+    
+    function viewPatientHistory(patientId) {
+      alert(`View history for patient ID: ${patientId}`);
+      // This would be implemented later
     }
   </script>
 </body>
