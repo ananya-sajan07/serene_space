@@ -220,8 +220,8 @@
           </div>
           <form id="appointmentForm">
             <div class="form-group">
-              <label>Select Date</label>
-              <input type="date" id="appointmentDate" required>
+              <label>Select Date (optional - slots below show available dates)</label>
+              <input type="date" id="appointmentDate">
               <button type="button" onclick="checkTimeSlots()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 14px;">Check Available Time Slots</button>
             </div>
             
@@ -311,6 +311,17 @@
               <label>How good is your ability to remember and use information while doing tasks (like following instructions)? (1 = Very poor, 10 = Excellent)</label>
               <input type="range" id="working_memory_score" min="1" max="10" value="5" oninput="document.getElementById('memoryValue').textContent = this.value">
               <span id="memoryValue">5</span>
+            </div>
+            
+            <!-- Missing fields added -->
+            <div class="form-group">
+              <label>Daily screen time (hours)</label>
+              <input type="number" id="screen_time_daily" min="0" max="24" step="0.5" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Phone unlocks per day</label>
+              <input type="number" id="phone_unlocks_per_day" min="0" max="500" required>
             </div>
             
             <button type="submit" class="auth-btn" style="width: auto; padding: 10px 20px;">Assess ADHD Risk</button>
@@ -493,11 +504,11 @@
 
       <!-- Chatbot Section -->
       <div id="chatbotSection" style="display: none;">
-        <h2 class="section-title">SereneBot - Mental Health Assistant</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 class="section-title" style="margin-bottom: 0;">SereneBot - Mental Health Assistant</h2>
+          <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">← Back to Dashboard</button>
+        </div>
         <div class="card">
-          <div style="margin-bottom: 15px;">
-            <button onclick="showMainDashboard()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">← Back to Dashboard</button>
-          </div>
           
           <!-- Chat Interface -->
           <div style="height: 400px; display: flex; flex-direction: column; background: #1e293b; border-radius: 8px; overflow: hidden;">
@@ -617,6 +628,20 @@
   </div>
 
   <script>
+    function formatTimeTo12Hour(time24) {
+      if (!time24 || time24 === 'N/A') return time24;
+      
+      // Handle formats like "9.00", "14.30", etc.
+      let [hours, minutes] = time24.split('.');
+      hours = parseInt(hours);
+      minutes = minutes || '00';
+      
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 0 should be 12
+      
+      return `${hours}:${minutes} ${ampm}`;
+    }
     window.addEventListener('DOMContentLoaded', function() {
       const userId = localStorage.getItem('user_id');
       const userName = localStorage.getItem('user_name');
@@ -768,7 +793,7 @@
               <div class="card doctor-card">
                 <div class="doctor-avatar">${doctor.name.charAt(0).toUpperCase()}</div>
                 <div>
-                  <p><strong>Name:</strong> Dr. ${doctor.name}</p>
+                  <p><strong>Name:</strong> ${doctor.name}</p>
                   <p><strong>Specialization:</strong> ${doctor.specialization || 'Not specified'}</p>
                   <p><strong>Hospital Name:</strong> ${doctor.hospital_name || 'Not specified'}</p>
                   <p><strong>Place:</strong> ${doctor.place || 'Not specified'}</p>
@@ -918,11 +943,118 @@
       document.getElementById('bookingFormSection').style.display = 'block';
     
       // Update form title
-      document.querySelector('#bookingFormSection .section-title').textContent = `Book Appointment with Dr. ${doctorName}`;
+      document.querySelector('#bookingFormSection .section-title').textContent = `Book Appointment with ${doctorName}`;
     
       // Set minimum date to today
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('appointmentDate').min = today;
+      
+      // Automatically load available dates and slots
+      loadAvailableTimeSlots(doctorId);
+    }
+
+    function loadAvailableTimeSlots(doctorId) {
+      const timeSlotsContainer = document.getElementById('availableTimeSlots');
+      timeSlotsContainer.innerHTML = '<p>Loading available time slots...</p>';
+      document.getElementById('timeSlotsContainer').style.display = 'block';
+      
+      // Fetch all future time slots for this doctor
+      fetch(`/api/doctors/${doctorId}/time_slots/`)
+        .then(response => response.json())
+        .then(data => {
+          const timeSlots = data.time_slots || [];
+          
+          // Filter for future dates
+          const today = new Date().toISOString().split('T')[0];
+          const futureTimeSlots = timeSlots.filter(slot => slot.date >= today);
+          
+          if (futureTimeSlots.length === 0) {
+            timeSlotsContainer.innerHTML = '<p>No available time slots for this doctor.</p>';
+            return;
+          }
+          
+          // Group by date and show slots with availability counts
+          const slotsByDate = {};
+          futureTimeSlots.forEach(slot => {
+            const bookedCounts = slot.booked_slots_count || {};
+            const maxPatients = slot.max_patients || 4;
+            const allSlots = slot.slot_data?.slots || slot.slots_list || [];
+            
+            // Find slots that still have space
+            const availableSlots = [];
+            allSlots.forEach(time => {
+              const bookedCount = bookedCounts[time] || 0;
+              if (bookedCount < maxPatients) {
+                availableSlots.push({
+                  time: time,
+                  slotId: slot.id,
+                  timeFormatted: formatTimeTo12Hour(time),
+                  bookedCount: bookedCount,
+                  maxPatients: maxPatients,
+                  availableSpots: maxPatients - bookedCount
+                });
+              }
+            });
+            
+            if (availableSlots.length > 0) {
+              if (!slotsByDate[slot.date]) {
+                slotsByDate[slot.date] = [];
+              }
+              slotsByDate[slot.date] = slotsByDate[slot.date].concat(availableSlots);
+            }
+          }); // <-- Add this closing brace
+          
+          // Display dates and slots
+          let html = '';
+          Object.keys(slotsByDate).sort().forEach(date => {
+            const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+              weekday: 'short', 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+            
+            html += `
+              <div style="margin-bottom: 20px; padding: 15px; background: #1e293b; border-radius: 8px;">
+                <h4 style="color: #60a5fa; margin-bottom: 10px;">${formattedDate}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+            `;
+            
+            slotsByDate[date].forEach(slot => {
+              const spotsLeft = slot.availableSpots || 0;
+              // Split time and AM/PM
+              const timeParts = slot.timeFormatted.split(' ');
+              const timeNumber = timeParts[0];
+              const ampm = timeParts[1] || '';
+              
+              html += `
+                <label style="display: flex; flex-direction: column; background: #0f172a; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #334155;">
+                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                      <input type="radio" name="selectedTime" value="${slot.time}" data-slot-id="${slot.slotId}">
+                      <span style="font-weight: 600; font-size: 16px;">${timeNumber}</span>
+                    </div>
+                    <span style="color: #94a3b8; font-size: 12px; font-weight: 500; margin-left: 4px;">${ampm}</span>
+                  </div>
+                  <div style="text-align: right; color: #10b981; font-size: 11px; border-top: 1px solid #334155; padding-top: 5px;">
+                    ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left
+                  </div>
+                </label>
+              `;
+            });
+            
+            html += `
+                </div>
+              </div>
+            `;
+          });
+          
+          timeSlotsContainer.innerHTML = html;
+        })
+        .catch(error => {
+          console.error('Error loading time slots:', error);
+          timeSlotsContainer.innerHTML = '<p>Error loading time slots. Please try again.</p>';
+        });
     }
 
     document.getElementById('appointmentForm').addEventListener('submit', function(e) {
@@ -933,7 +1065,6 @@
         return;
       }
       
-      const date = document.getElementById('appointmentDate').value;
       const reason = document.getElementById('reason').value;
       
       // Get selected time slot from radio buttons
@@ -942,12 +1073,29 @@
         alert('Please select a time slot');
         return;
       }
+      
       const bookedTime = selectedTimeRadio.value;
+      const timeSlotId = selectedTimeRadio.getAttribute('data-slot-id');
       const userId = localStorage.getItem('user_id');
       
+      // Get the date from the parent container (the date header)
+      const slotContainer = selectedTimeRadio.closest('div[style*="margin-bottom: 20px;"]');
+      let date = '';
       
-      if (!date || !bookedTime) {
-        alert('Please select date and time slot');
+      if (slotContainer) {
+        // Find the date header within the same container
+        const dateHeader = slotContainer.querySelector('h4');
+        if (dateHeader) {
+          // Extract date from the header text (e.g., "Wed, Mar 18, 2026")
+          const dateText = dateHeader.textContent;
+          // Convert to YYYY-MM-DD format
+          const dateObj = new Date(dateText);
+          date = dateObj.toISOString().split('T')[0];
+        }
+      }
+      
+      if (!date) {
+        alert('Could not determine appointment date. Please try again.');
         return;
       }
       
@@ -957,8 +1105,6 @@
         alert('Please select a valid time slot');
         return;
       }
-
-      const timeSlotId = selectedTimeRadio.getAttribute('data-slot-id');
       
       const bookingData = {
         time_slot_id: parseInt(timeSlotId),
@@ -989,13 +1135,17 @@
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          // Instead of throwing, parse the error response
+          return response.json().then(data => {
+            throw new Error(data.error || `HTTP error! Status: ${response.status}`);
+          });
         }
         return response.json();
-      }) 
+      })
+
       .then(data => {
         console.log('Booking created:', data);
-        alert(`Appointment booked successfully with Dr. ${selectedDoctorName} on ${date} at ${bookedTime}`);
+        alert(`Appointment booked successfully with ${selectedDoctorName} on ${date} at ${bookedTime}`);
         
         // Reset form and return to main dashboard
         document.getElementById('appointmentForm').reset();
@@ -1005,7 +1155,18 @@
       .catch(error => {
         console.error('Booking error:', error);
         alert(`Error booking appointment: ${error.message}`);
+        
+        // Try to get more details from the response
+        if (error.response) {
+          error.response.json().then(data => {
+            console.error('Server error details:', data);
+            alert(`Server error: ${JSON.stringify(data)}`);
+          }).catch(e => {
+            console.error('Could not parse error response');
+          });
+        }
       })
+      
       .finally(() => {
         // Restore button
         submitBtn.textContent = originalText;
@@ -1016,29 +1177,65 @@
     document.getElementById('adhdForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      // Get all form values
-      const formData = {
-        age: document.getElementById('age').value,
-        gender: document.getElementById('gender').value,
-        sleep_hours_avg: document.getElementById('sleep_hours_avg').value,
-        easily_distracted: document.getElementById('easily_distracted').value,
-        forgetful_daily_tasks: document.getElementById('forgetful_daily_tasks').value,
-        poor_organization: document.getElementById('poor_organization').value,
-        difficulty_sustaining_attention: document.getElementById('difficulty_sustaining_attention').value,
-        restlessness: document.getElementById('restlessness').value,
-        impulsivity_score: document.getElementById('impulsivity_score').value,
-        screen_time_daily: document.getElementById('screen_time_daily').value,
-        phone_unlocks_per_day: document.getElementById('phone_unlocks_per_day').value,
-        working_memory_score: document.getElementById('working_memory_score').value
-      };
-      
-      console.log('ADHD Form submitted:', formData);
-      
       // Show loading
       const submitBtn = document.querySelector('#adhdForm button[type="submit"]');
       const originalText = submitBtn.textContent;
       submitBtn.textContent = 'Assessing...';
       submitBtn.disabled = true;
+      
+      // Get all form values with null checks
+      const ageEl = document.getElementById('age');
+      const genderEl = document.getElementById('gender');
+      const sleepEl = document.getElementById('sleep_hours_avg');
+      const distractedEl = document.getElementById('easily_distracted');
+      const forgetfulEl = document.getElementById('forgetful_daily_tasks');
+      const organizationEl = document.getElementById('poor_organization');
+      const attentionEl = document.getElementById('difficulty_sustaining_attention');
+      const restlessnessEl = document.getElementById('restlessness');
+      const impulsivityEl = document.getElementById('impulsivity_score');
+      const screenTimeEl = document.getElementById('screen_time_daily');
+      const phoneUnlocksEl = document.getElementById('phone_unlocks_per_day');
+      const workingMemoryEl = document.getElementById('working_memory_score');
+      
+      // Check if all elements exist with debug info
+      const missingElements = [];
+      if (!ageEl) missingElements.push('age');
+      if (!genderEl) missingElements.push('gender');
+      if (!sleepEl) missingElements.push('sleep_hours_avg');
+      if (!distractedEl) missingElements.push('easily_distracted');
+      if (!forgetfulEl) missingElements.push('forgetful_daily_tasks');
+      if (!organizationEl) missingElements.push('poor_organization');
+      if (!attentionEl) missingElements.push('difficulty_sustaining_attention');
+      if (!restlessnessEl) missingElements.push('restlessness');
+      if (!impulsivityEl) missingElements.push('impulsivity_score');
+      if (!screenTimeEl) missingElements.push('screen_time_daily');
+      if (!phoneUnlocksEl) missingElements.push('phone_unlocks_per_day');
+      if (!workingMemoryEl) missingElements.push('working_memory_score');
+      
+      if (missingElements.length > 0) {
+        console.error('Missing form elements:', missingElements);
+        alert(`Form error: Missing fields: ${missingElements.join(', ')}. Please refresh and try again.`);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        return;
+      }
+      
+      const formData = {
+        age: ageEl.value,
+        gender: genderEl.value,
+        sleep_hours_avg: sleepEl.value,
+        easily_distracted: distractedEl.value,
+        forgetful_daily_tasks: forgetfulEl.value,
+        poor_organization: organizationEl.value,
+        difficulty_sustaining_attention: attentionEl.value,
+        restlessness: restlessnessEl.value,
+        impulsivity_score: impulsivityEl.value,
+        screen_time_daily: screenTimeEl.value,
+        phone_unlocks_per_day: phoneUnlocksEl.value,
+        working_memory_score: workingMemoryEl.value
+      };
+      
+      console.log('ADHD Form submitted:', formData);
       
       // Call your existing API
       fetch('/api/predict_adhd/', {
@@ -1153,7 +1350,6 @@
         // Reset form
         document.getElementById('adhdForm').reset();
       })
-
       .catch(error => {
         console.error('ADHD assessment error:', error);
         alert(`Error assessing ADHD: ${error.message}`);
@@ -1298,16 +1494,7 @@
               <strong> Recommendation:</strong><br>
               ${recommendation}
             </div>
-            
-            ${data.anxiety_scale ? `
-            <div style="margin-top: 15px; padding: 10px; background: #0f172a; border-radius: 6px;">
-              <strong> Anxiety Scale:</strong><br>
-              <small style="color: #94a3b8;">
-                ${Object.entries(data.anxiety_scale).map(([key, value]) => `${key}: ${value}`).join('<br>')}
-              </small>
-            </div>
-            ` : ''}
-            
+                        
             <button onclick="this.parentElement.remove()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 15px; width: 100%;">Close Results</button>
           </div>
         `;
@@ -1464,7 +1651,7 @@
               <div class="card" style="margin-bottom: 15px; border-left: 4px solid ${resultColor};">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                   <div>
-                    <strong>${assessment.assessment_type === 'adhd' ? '🧠 ADHD Assessment' : '😰 Anxiety Assessment'}</strong>
+                    <strong>${assessment.assessment_type === 'adhd' ? ' ADHD Assessment' : ' Anxiety Assessment'}</strong>
                     <span style="margin-left: 10px; color: ${resultColor}; font-weight: bold;">${assessment.result}</span>
                   </div>
                   <small style="color: #94a3b8;">${date} at ${time}</small>
@@ -1637,7 +1824,7 @@
       document.getElementById('moodSection').style.display = 'none';
       document.getElementById('chatbotSection').style.display = 'none';
       document.getElementById('userPrescriptionsSection').style.display = 'block';
-      
+
       // Hide assessment history section if it exists
       const historySection = document.getElementById('assessmentHistorySection');
       if (historySection) {
@@ -1677,8 +1864,9 @@
           
           let html = '';
           prescriptions.forEach(p => {
-            const issuedDate = new Date(p.issued_date).toLocaleDateString();
-            const followUp = p.follow_up_date ? new Date(p.follow_up_date).toLocaleDateString() : 'Not scheduled';
+            // Format dates as DD/MM/YYYY
+            const issuedDate = new Date(p.issued_date).toLocaleDateString('en-GB');
+            const followUp = p.follow_up_date ? new Date(p.follow_up_date).toLocaleDateString('en-GB') : 'Not scheduled';
             
             // Generate medication list HTML
             let medsHtml = '<ul style="margin-top: 5px; margin-left: 20px;">';
@@ -1700,7 +1888,7 @@
             html += `
               <div class="card" style="margin-bottom: 20px; border-left: 4px solid #10b981;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                  <h3 style="color: #f8fafc;">Dr. ${p.doctor_name}</h3>
+                  <h3 style="color: #f8fafc;"> ${p.doctor_name}</h3>
                   <span style="background: ${p.status === 'active' ? '#10b981' : '#6b7280'}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px;">
                     ${p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                   </span>
@@ -1971,10 +2159,17 @@
           <div style="width: 35px; height: 35px; background: #60a5fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">👤</div>
         `;
       } else {
+        // Format bot messages - remove markdown and add proper spacing
+        let formattedText = text
+          .replace(/\*\*/g, '') // Remove bold markers
+          .replace(/\*/g, '•') // Convert bullet points to • symbol
+          .replace(/\n\n/g, '<br><br>') // Double line breaks
+          .replace(/\n/g, '<br>'); // Single line breaks
+        
         messageDiv.innerHTML = `
           <div style="width: 35px; height: 35px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
           <div style="background: #0f172a; padding: 12px 16px; border-radius: 18px 18px 18px 4px; max-width: 70%;">
-            <p style="color: #cbd5e1; white-space: pre-wrap;">${escapeHTML(text)}</p>
+            <p style="color: #cbd5e1; margin: 0;">${formattedText}</p>
           </div>
         `;
       }
@@ -2347,7 +2542,9 @@
           let appointmentsHTML = '';
           appointments.forEach(booking => {
             const date = booking.time_slot_details?.date || 'N/A';
-            const time = booking.booked_time || 'N/A';
+            // The API returns booked_time directly in the booking object
+            const time = formatTimeTo12Hour(booking.booked_time) || 'N/A';
+            console.log("User booking time:", time); // Add debug log
             const doctorName = booking.doctor_name || 'Doctor';
             const status = booking.status || 'pending';
             
@@ -2358,24 +2555,29 @@
               <div class="appointment-card" style="background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #334155;">
                 <div>
                   <h4 style="color: #f8fafc; margin-bottom: 5px;">Appointment Details</h4>
-                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Doctor:</strong> Dr. ${doctorName}</p>
+                  <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Doctor:</strong> ${doctorName}</p>
                   <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Date:</strong> ${date}</p>
                   <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Time:</strong> ${time}</p>
                   <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Symptoms:</strong> ${booking.symptoms || 'None specified'}</p>
                   <p style="color: #94a3b8; margin-bottom: 5px;"><strong>Notes:</strong> ${booking.notes || 'None'}</p>
-                  <p style="color: #94a3b8;"><strong>Status:</strong> 
-                    <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background: ${getStatusColor(status)};">
+                  <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <strong>Status:</strong>
+                    <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${getStatusColor(status)}; color: white; display: inline-block;">
                       ${status.charAt(0).toUpperCase() + status.slice(1)}
                     </span>
-                  </p>
+                  </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
                   ${status === 'pending' ? `
-                    <button onclick="rescheduleAppointment(${booking.id})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Reschedule</button>
-                    <button onclick="cancelAppointment(${booking.id})" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel</button>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                      <button onclick="rescheduleAppointment(${booking.id})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Reschedule</button>
+                      <button onclick="cancelAppointment(${booking.id})" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Cancel</button>
+                    </div>
                   ` : ''}
                   ${status === 'confirmed' ? `
-                    <button onclick="addNotesToAppointment(${booking.id})" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">Add Notes</button>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                      <button onclick="addNotesToAppointment(${booking.id})" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">Add Notes</button>
+                    </div>
                   ` : ''}
                 </div>
               </div>
@@ -2447,7 +2649,7 @@
               reviewsHTML += `
                 <div class="card" style="margin-bottom: 15px; position: relative;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <strong>Dr. ${review.doctor_name}</strong>
+                    <strong> ${review.doctor_name}</strong>
                     <span style="color: #fbbf24;">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
                   </div>
                   <p style="color: #94a3b8; margin-bottom: 5px;">${review.comment}</p>
@@ -2513,7 +2715,7 @@
               <div class="card" style="margin-bottom: 20px; cursor: pointer;" onclick="showBookDetail(${book.id})">
                 <h3>${book.title}</h3>
                 <p><strong>Author:</strong> ${book.author}</p>
-                <p><strong>Category:</strong> ${book.category}</p>
+                <p><strong>Category:</strong> ${book.category === 'adhd' ? 'ADHD' : book.category.charAt(0).toUpperCase() + book.category.slice(1)}</p>
                 <p>${book.description ? book.description.substring(0, 150) + '...' : 'No description available'}</p>
               </div>
             `;
@@ -2967,9 +3169,9 @@
               <div style="flex: 2; min-width: 300px;">
                 <h2 style="color: #f8fafc; margin-bottom: 15px;">${book.title}</h2>
                 <p><strong>Author:</strong> ${book.author}</p>
-                <p><strong>Category:</strong> ${book.category}</p>
+                <p><strong>Category:</strong> ${book.category === 'adhd' ? 'ADHD' : book.category.charAt(0).toUpperCase() + book.category.slice(1)}</p>
                 <p><strong>Status:</strong> ${book.is_active ? 'Available' : 'Not Available'}</p>
-                <p><strong>Added on:</strong> ${new Date(book.created_at).toLocaleDateString()}</p>
+                <p><strong>Added on:</strong> ${new Date(book.created_at).toLocaleDateString('en-GB')}</p>
                 
                 <div style="margin-top: 20px;">
                   <h3 style="color: #cbd5e1; margin-bottom: 10px;">Description</h3>
@@ -3043,7 +3245,7 @@
       currentDoctorName = doctorName;
       
       // Update section title
-      document.getElementById('reviewsDoctorName').textContent = `Reviews for Dr. ${doctorName}`;
+      document.getElementById('reviewsDoctorName').textContent = `Reviews for ${doctorName}`;
       
       // Hide all sections
       document.getElementById('nearbyDoctorsSection').style.display = 'none';
@@ -3147,7 +3349,14 @@
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          // Try to get error message from response body
+          return response.json().then(errorData => {
+            // Create an error with the server message
+            throw new Error(errorData.error || `Server error (${response.status})`);
+          }).catch(() => {
+            // If can't parse JSON, throw generic error
+            throw new Error(`Server error (${response.status})`);
+          });
         }
         return response.json();
       })
@@ -3160,7 +3369,7 @@
       })
       .catch(error => {
         console.error('Error submitting review:', error);
-        alert(`Error submitting review: ${error.message}`);
+        alert(error.message); // This will show the actual error from server
       })
       .finally(() => {
         // Restore button

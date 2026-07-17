@@ -353,8 +353,13 @@
                            (data.email && data.email === email);
           
           if (isSuccess) {
-            // Assume it's a doctor since this is doctor portal
             const doctorName = data.name || data.username || email.split('@')[0];
+            
+            // Check if this is actually a user trying to login as doctor
+            if (data.role === 'user') {
+              showMessage(`This is a user account. Please use the user login portal.`, 'error');
+              return;
+            }
             
             showMessage(`✅ Login successful! Welcome Dr. ${doctorName}`, 'success');
             

@@ -69,12 +69,33 @@ class TimeSlot(models.Model):
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='time_slots')
     date = models.DateField()  # Date for which slots are available
     slot_data = models.JSONField()  # Stores {"slots": ["9.00", "10.00", "11.00", "14.00", "15.00"]}
-    is_booked = models.BooleanField(default=False)
+    max_patients = models.IntegerField(default=4)  # Maximum 4 patients per slot
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         slots = self.slot_data.get('slots', [])
         return f"{self.doctor.name} - {self.date} ({', '.join(slots)})"
+    
+    def get_booked_slots(self):
+        """Return dict of slots with booking counts"""
+        bookings = Booking.objects.filter(time_slot=self)
+        slot_counts = {}
+        for booking in bookings:
+            time = booking.booked_time
+            slot_counts[time] = slot_counts.get(time, 0) + 1
+        return slot_counts
+    
+    def get_available_slots(self):
+        """Return list of slots that have space available"""
+        all_slots = self.slot_data.get('slots', [])
+        booked_counts = self.get_booked_slots()
+        
+        available = []
+        for slot in all_slots:
+            booked_count = booked_counts.get(slot, 0)
+            if booked_count < self.max_patients:
+                available.append(slot)
+        return available
 
 class DoctorFeedback(models.Model):
     #User feedback/review for doctors

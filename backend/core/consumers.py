@@ -2,18 +2,15 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
+print("="*50)
+print("CONSUMERS.PY IS BEING LOADED")
+print("="*50)
+
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        print(f"Connect method called for room: {self.scope['url_route']['kwargs']['room_name']}")
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f'chat_{self.room_name}'
-        
-        # Get user from scope (set by AuthMiddlewareStack)
-        self.user = self.scope['user']
-        
-        # Check if user is authenticated
-        if self.user.is_anonymous:
-            await self.close()
-            return
         
         # Join room group
         await self.channel_layer.group_add(
@@ -22,15 +19,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         
         await self.accept()
+        print("Connection accepted")
         
         # Send welcome message
         await self.send(text_data=json.dumps({
             'type': 'connection_established',
             'message': f'Connected to chat room: {self.room_name}',
-            'username': self.get_username()
+            'username': 'Test User'
         }))
 
     async def disconnect(self, close_code):
+        print(f"Disconnect called with code: {close_code}")
         # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -40,8 +39,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-        username = text_data_json.get('username', self.get_username())
+        username = text_data_json.get('username', 'User')
         timestamp = text_data_json.get('timestamp', '')
+        
+        print(f"Received message from {username}: {message}")
         
         # Send message to room group
         await self.channel_layer.group_send(
@@ -62,12 +63,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'username': event['username'],
             'timestamp': event['timestamp']
         }))
-    
-    def get_username(self):
-        """Helper to get username safely"""
-        if hasattr(self.user, 'username'):
-            return self.user.username
-        elif hasattr(self.user, 'email'):
-            return self.user.email.split('@')[0]
-        else:
-            return 'User'

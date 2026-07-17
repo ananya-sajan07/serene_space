@@ -70,14 +70,14 @@
             word-wrap: break-word;
         }
         .message.sent .message-content {
-            background: #3b82f6;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-        }
-        .message.received .message-content {
             background: #1e293b;
             color: #cbd5e1;
             border-radius: 18px 18px 18px 4px;
+        }
+        .message.received .message-content {
+            background: #3b82f6;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
         }
         .message-info {
             display: flex;
@@ -165,19 +165,31 @@
         const role = urlParams.get('role');
         
         document.getElementById('chat-title').textContent = `Chat with ${otherName}`;
-        document.getElementById('chat-participant').textContent = `You: ${userName} (${role})`;
-        
-        // WebSocket connection
-        const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
-        );
+        document.getElementById('chat-participant').textContent = `You: ${userName}`;
         
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const statusDiv = document.getElementById('connection-status');
         
+        console.log("Room name:", roomName);
+        console.log("Connecting to WebSocket:", 'ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+        
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+        
+        // Connection timeout
+        setTimeout(function() {
+            if (chatSocket.readyState !== WebSocket.OPEN) {
+                statusDiv.textContent = '❌ Connection timeout';
+                statusDiv.style.color = '#ef4444';
+                console.log('Connection timeout - state:', chatSocket.readyState);
+            }
+        }, 5000);
+        
         chatSocket.onopen = function(e) {
+            console.log("✅ WebSocket connected successfully");
             statusDiv.textContent = '✅ Connected';
             statusDiv.style.color = '#10b981';
             chatInput.disabled = false;
@@ -186,39 +198,52 @@
         };
         
         chatSocket.onclose = function(e) {
-            statusDiv.textContent = '❌ Disconnected - Refresh page to reconnect';
+            console.log("🔌 WebSocket closed - Code:", e.code, "Reason:", e.reason);
+            console.log("Clean close:", e.wasClean);
+            
+            let errorMessage = '❌ Disconnected';
+            if (e.code === 1006) {
+                errorMessage = '❌ Connection refused - Server may be down';
+            } else if (e.code === 1000) {
+                errorMessage = '✅ Disconnected normally';
+            }
+            
+            statusDiv.textContent = errorMessage + ' (Code: ' + e.code + ')';
             statusDiv.style.color = '#ef4444';
             chatInput.disabled = true;
             sendBtn.disabled = true;
         };
         
         chatSocket.onerror = function(e) {
-            statusDiv.textContent = '❌ Connection error';
+            console.error("❌ WebSocket error:", e);
+            statusDiv.textContent = '❌ Connection error - Check console';
             statusDiv.style.color = '#ef4444';
-            console.error('WebSocket error:', e);
         };
         
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
+            console.log("Message received:", data);
             
-            if (data.type === 'connection_established') {
-                addMessage('system', data.message);
-            } else if (data.type === 'chat_message') {
+        if (data.type === 'connection_established') {
+            // Don't show system connection messages - they're not user-friendly
+            console.log('Connected to chat room');
+        } else if (data.type === 'chat_message') {
                 const isSent = data.username === userName;
                 addMessage(data.username, data.message, data.timestamp, isSent);
             }
         };
-        
+
         function addMessage(sender, text, timestamp = '', isSent = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-            
+            // Swap: sent messages go to left, received to right
+            messageDiv.className = `message ${isSent ? 'received' : 'sent'}`;
+
             const time = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
-            
+
             messageDiv.innerHTML = `
                 <div class="message-content">${escapeHTML(text)}</div>
                 <div class="message-info">
-                    <span>${sender === 'system' ? 'System' : sender}</span>
+                    <span>${sender}</span>
                     <span>${time}</span>
                 </div>
             `;
@@ -236,6 +261,7 @@
         function sendMessage() {
             const message = chatInput.value.trim();
             if (message) {
+                console.log("Sending message:", message);
                 chatSocket.send(JSON.stringify({
                     'message': message,
                     'username': userName,

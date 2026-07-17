@@ -116,20 +116,32 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
+    print(f"\nLOGIN ATTEMPT - Email: {request.data.get('email')}, Password: {request.data.get('password')}")
     email = request.data.get('email')
     password = request.data.get('password')
 
     #First Check - User Model
     try:
         user = User.objects.get(email=email, password=password)
-        return Response({
-            "message": "Login successful",
-            "user_id": user.id,
-            "name": user.name,
-            "email": user.email,
-            "role": "user",
-            "is_admin": user.is_admin
-        })
+        # Ensure this is actually a user (not a doctor with same credentials)
+        # User model doesn't have a role field by default, so we check if they exist in Doctor model
+        try:
+            # Check if this email also exists in Doctor model
+            doctor = Doctor.objects.get(email=email)
+            # If it exists, this is a doctor trying to login as user
+            return Response({
+                "error": "Please use doctor login portal"
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        except Doctor.DoesNotExist:
+            # This is a genuine user
+            return Response({
+                "message": "Login successful",
+                "user_id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": "user",
+                "is_admin": user.is_admin
+            })
     except User.DoesNotExist:
         pass #Not a User, Check if Doctor
 
@@ -153,6 +165,8 @@ def login(request):
                 "error": "Your account is not Approved yet. Please wait for Admin Approval."
             }, status=status.HTTP_401_UNAUTHORIZED)
         except Doctor.DoesNotExist:
+            print(f"LOGIN FAILED - Email: {email}, Password: {password}")
+            print("No matching user or doctor found")
             return Response({"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -199,6 +213,12 @@ def predict_adhd_api(request):
     API endpoint for ADHD prediction using trained ML model
     Expects JSON with 12 features from ADHD.docx
     """
+    print("\n" + "="*50)
+    print("ADHD PREDICTION API CALLED")
+    print(f"Request method: {request.method}")
+    print(f"Request data: {request.data}")
+    print("="*50)
+    
     try:
         # Get data from request
         data = request.data
@@ -527,14 +547,29 @@ def doctor_time_slots_api(request, doctor_id=None):
     # POST: create new time slot
     # GET: get doctor's time slots(filter by date if provided)
     try:
+        print("\n" + "="*50)
+        print("DOCTOR TIME SLOTS API CALLED")
+        print(f"Method: {request.method}")
+        print(f"Doctor ID: {doctor_id}")
+        print(f"Request data: {request.data}")
+        
         if request.method == 'POST':
             #Create new time slot
-            doctor = Doctor.objects.get(id=doctor_id)
+            try:
+                doctor = Doctor.objects.get(id=doctor_id)
+                print(f"Doctor found: {doctor.name}")
+            except Doctor.DoesNotExist as e:
+                print(f"Doctor not found: {e}")
+                return Response(
+                    {"error": f"Doctor with ID {doctor_id} not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             #Validate required fields
             required_fields = ['date', 'slots']
             for field in required_fields:
                 if field not in request.data:
+                    print(f"Missing required field: {field}")
                     return Response(
                         {"error":f"Missing required field: {field}"},
                         status = status.HTTP_400_BAD_REQUEST
@@ -542,67 +577,135 @@ def doctor_time_slots_api(request, doctor_id=None):
             
             # Validate slots array
             if 'slots' not in request.data or not isinstance(request.data['slots'], list):
+                print(f"Invalid slots format: {request.data.get('slots')}")
                 return Response(
                     {"error": "Please provide 'slots' as an array of times (e.g., ['9.00', '10.00', '11.00'])"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Create slot_data JSON with slots array
-            slot_data = {
-                "slots": request.data['slots']
-            }
+            # Check if a time slot already exists for this doctor and date
+            try:
+                existing_time_slot = TimeSlot.objects.filter(
+                    doctor=doctor,
+                    date=request.data['date']
+                ).first()
+                print(f"Existing time slot: {existing_time_slot}")
+            except Exception as e:
+                print(f"Error checking existing time slot: {e}")
+                raise
 
-            #Create time slot
-            time_slot = TimeSlot.objects.create(
-                doctor=doctor,
-                date=request.data['date'],
-                slot_data=slot_data,
-                is_booked=False
-            )
+            if existing_time_slot:
+                # Update existing time slot - merge slots
+                try:
+                    current_slots = existing_time_slot.slot_data.get('slots', [])
+                    new_slots = request.data['slots']
+                    print(f"Current slots: {current_slots}")
+                    print(f"New slots: {new_slots}")
+                    
+                    # Merge slots (avoid duplicates)
+                    merged_slots = list(set(current_slots + new_slots))
+                    
+                    # Custom sort: AM first, then PM, each in ascending order
+                    def sort_time_slot(time_str):
+                        hours = float(time_str)
+                        return (1 if hours >= 12 else 0, hours)
+                    
+                    merged_slots.sort(key=sort_time_slot)
+                    print(f"Merged slots: {merged_slots}")
+                    
+                    # Update the existing time slot
+                    existing_time_slot.slot_data = {"slots": merged_slots}
+                    
+                    # Check if any bookings exist for this time slot
+                    has_bookings = Booking.objects.filter(time_slot=existing_time_slot).exists()
+                    print(f"Has bookings: {has_bookings}")
+                    # is_booked field was removed, so we don't set it anymore
+                    
+                    existing_time_slot.save()
+                    print("Time slot updated successfully")
+                    
+                    serializer = TimeSlotSerializer(existing_time_slot)
+                    return Response({
+                        "message": "Time slots added to existing date successfully",
+                        "time_slot": serializer.data
+                    }, status=status.HTTP_200_OK)
+                except Exception as e:
+                    print(f"Error updating existing time slot: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    raise
+            else:
+                # Create new time slot
+                try:
+                    slot_data = {
+                        "slots": request.data['slots']
+                    }
+                    print(f"Creating new time slot with data: {slot_data}")
 
-            serializer = TimeSlotSerializer(time_slot)
-            return Response({
-                "message": "Time slot created Successfully",
-                "time_slot": serializer.data
-            }, status= status.HTTP_201_CREATED)
+                    time_slot = TimeSlot.objects.create(
+                        doctor=doctor,
+                        date=request.data['date'],
+                        slot_data=slot_data
+                    )
+                    print(f"Time slot created with ID: {time_slot.id}")
+
+                    serializer = TimeSlotSerializer(time_slot)
+                    return Response({
+                        "message": "Time slot created Successfully",
+                        "time_slot": serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    print(f"Error creating new time slot: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    raise
         
         elif request.method == 'GET':
             #Get doctor's time slots
-            doctor = Doctor.objects.get(id=doctor_id)
-            date = request.GET.get('date')
+            try:
+                doctor = Doctor.objects.get(id=doctor_id)
+                date = request.GET.get('date')
 
-            if date:
-                time_slots = TimeSlot.objects.filter(doctor=doctor, date=date)
-            else:
-                time_slots = TimeSlot.objects.filter(doctor=doctor)
+                if date:
+                    time_slots = TimeSlot.objects.filter(doctor=doctor, date=date)
+                else:
+                    time_slots = TimeSlot.objects.filter(doctor=doctor)
 
-            serializer = TimeSlotSerializer(time_slots, many= True)
-            return Response({
-                "count": len(time_slots),
-                "time_slots": serializer.data
-            })
+                serializer = TimeSlotSerializer(time_slots, many=True)
+                return Response({
+                    "count": len(time_slots),
+                    "time_slots": serializer.data
+                })
+            except Doctor.DoesNotExist:
+                return Response(
+                    {"error": f"Doctor with ID {doctor_id} not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
     
-    except Doctor.DoesNotExist:
-        return Response(
-            {"error": f"Doctor with ID {doctor_id} not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
     except Exception as e:
+        print(f"UNHANDLED EXCEPTION: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return Response(
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
-@api_view(['PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def time_slot_detail_api(request, time_slot_id):
-    # API to update or delete a time slot
+    # API to get, update or delete a time slot
+    # GET: Retrieve time slot details
     # PUT: Update time slot(e.g., mark as booked)
     # DELETE: delete time slot 
 
     try:
         time_slot = TimeSlot.objects.get(id=time_slot_id)
 
-        if request.method == 'PUT':
+        if request.method == 'GET':
+            serializer = TimeSlotSerializer(time_slot)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
             #Update time slot
             serializer=TimeSlotSerializer(time_slot, data=request.data, partial=True)
 
@@ -623,7 +726,7 @@ def time_slot_detail_api(request, time_slot_id):
     except TimeSlot.DoesNotExist:
         return Response(
             {"error":f"Time slot with ID {time_slot_id} not found"},
-            status=status.HTTP_400_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND
         )
 
     except Exception as e:
@@ -732,6 +835,30 @@ def doctor_feedback_api(request, doctor_id=None):
             
             user = User.objects.get(id=user_id)
             
+            print(f"\n=== FEEDBACK DEBUG ===")
+            print(f"User ID: {user_id}, Doctor ID: {doctor_id}")
+            
+            # Check if user has ever had a completed appointment with this doctor
+            completed_appointments = Booking.objects.filter(
+                user=user,
+                doctor=doctor,
+                status='completed'
+            )
+            
+            print(f"Completed appointments found: {completed_appointments.count()}")
+            for booking in completed_appointments:
+                print(f"  Booking ID: {booking.id}, Status: {booking.status}, Date: {booking.time_slot.date}")
+            
+            if not completed_appointments.exists():
+                error_msg = "You can only review doctors you have visited and completed an appointment with."
+                print(f"❌ REJECTED: {error_msg}")
+                return Response(
+                    {"error": error_msg},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            print("✅ Has completed appointments - can review")
+            
             # Check if user already gave feedback to this doctor
             existing_feedback = DoctorFeedback.objects.filter(doctor=doctor, user=user).first()
             if existing_feedback:
@@ -783,22 +910,34 @@ def doctor_feedback_api(request, doctor_id=None):
         return Response(
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )   
+        )  
 
 @api_view(['POST', 'GET'])
 def booking_api(request, user_id = None, doctor_id = None): 
-    # API for booking appointmetns
+    # API for booking appointments
     # POST - Create new Booking (user books time slot)
     # GET - Get bookings (user's or doctor's depending on parameters) 
 
+    print("\n" + "="*50)
+    print("BOOKING API CALLED")
+    print(f"Method: {request.method}")
+    print(f"user_id: {user_id}, doctor_id: {doctor_id}")
+    print(f"Request data: {request.data}")
+    
     try:
         if request.method == 'POST':
-            #User creates booking
+            # User creates booking
+            print(f"Attempting to find user with ID: {user_id}")
             user = User.objects.get(id=user_id)
+            print(f"User found: {user.name}")
+            
             time_slot_id = request.data.get('time_slot_id')
             booked_time = request.data.get('booked_time')
             symptoms = request.data.get('symptoms', '')
             notes = request.data.get('notes', '')
+
+            print(f"time_slot_id: {time_slot_id}, booked_time: {booked_time}")
+            print(f"symptoms: {symptoms}, notes: {notes}")
 
             if not time_slot_id:
                 return Response(
@@ -806,7 +945,9 @@ def booking_api(request, user_id = None, doctor_id = None):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            print(f"Attempting to find time slot with ID: {time_slot_id}")
             time_slot = TimeSlot.objects.get(id=time_slot_id)
+            print(f"Time slot found for doctor: {time_slot.doctor.name}, date: {time_slot.date}")
 
             if not booked_time:
                 return Response(
@@ -814,20 +955,25 @@ def booking_api(request, user_id = None, doctor_id = None):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Check if the requested time is available in the time slot's slots
-            available_slots = time_slot.slot_data.get('slots', [])
-            if booked_time not in available_slots:
+            # Check if the requested time exists in the time slot's slots
+            all_slots = time_slot.slot_data.get('slots', [])
+            if booked_time not in all_slots:
                 return Response(
-                    {"error": f"Time {booked_time} is not available. Available slots: {available_slots}"},
+                    {"error": f"Time {booked_time} is not a valid slot. Available slots: {all_slots}"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            #To check if time slot is already booked
-            if time_slot.is_booked:
+            
+            # Check if this slot has reached maximum capacity (4 patients)
+            booked_counts = time_slot.get_booked_slots()
+            current_bookings = booked_counts.get(booked_time, 0)
+            
+            if current_bookings >= time_slot.max_patients:
                 return Response(
-                    {"error": "This time slot is already booked"},
+                    {"error": f"Time slot {booked_time} is fully booked ({time_slot.max_patients}/{time_slot.max_patients} patients). Please choose another time."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            
+            print(f"Slot {booked_time} has {current_bookings}/{time_slot.max_patients} bookings - OK to book")
 
             # Doctor ID is required
             requested_doctor_id = request.data.get('doctor_id')
@@ -844,46 +990,44 @@ def booking_api(request, user_id = None, doctor_id = None):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            #To Create booking
+            # Create booking
             booking = Booking.objects.create(
                 user=user,
                 doctor=time_slot.doctor,
                 time_slot=time_slot,
-                booked_time= booked_time,
-                symptoms= symptoms,
+                booked_time=booked_time,
+                symptoms=symptoms,
                 notes=notes,
                 status='pending'
             )
-
-            #To mark time slot as booked
-            time_slot.is_booked = True
-            time_slot.save()
+            print(f"Booking created with ID: {booking.id}")
 
             serializer = BookingSerializer(booking)
             return Response({
                 "message": "Booking created successfully",
                 "booking": serializer.data
-            },status=status.HTTP_201_CREATED)
+            }, status=status.HTTP_201_CREATED)
 
-        
         elif request.method == 'GET':
             if user_id:
-                #To GET user's bookings
+                # Get user's bookings
+                print(f"Fetching bookings for user ID: {user_id}")
                 user = User.objects.get(id=user_id)
                 bookings = Booking.objects.filter(user=user).order_by('-created_at')
                 serializer = BookingSerializer(bookings, many=True)
                 return Response({
-                    "user_id":user.id,
+                    "user_id": user.id,
                     "user_name": user.name,
                     "total_bookings": len(bookings),
                     "bookings": serializer.data
                 })
             
             elif doctor_id:
-                #To GET doctor's bookings
+                # Get doctor's bookings
+                print(f"Fetching bookings for doctor ID: {doctor_id}")
                 doctor = Doctor.objects.get(id=doctor_id)
                 bookings = Booking.objects.filter(doctor=doctor).order_by('-created_at')
-                serializer = BookingSerializer(bookings, many = True)
+                serializer = BookingSerializer(bookings, many=True)
                 return Response({
                     "doctor_id": doctor.id,
                     "doctor_name": doctor.name,
@@ -898,24 +1042,30 @@ def booking_api(request, user_id = None, doctor_id = None):
                 )
         
     except User.DoesNotExist:
+        print(f"ERROR: User with ID {user_id} not found")
         return Response(
             {"error": f"User with ID {user_id} not found"},
             status=status.HTTP_404_NOT_FOUND
         )
     
     except Doctor.DoesNotExist:
+        print(f"ERROR: Doctor with ID {doctor_id} not found")
         return Response(
             {"error": f"Doctor with ID {doctor_id} not found"},
             status=status.HTTP_404_NOT_FOUND
         )
     
     except TimeSlot.DoesNotExist:
+        print(f"ERROR: Time Slot with ID {request.data.get('time_slot_id')} not found")
         return Response(
             {"error": f"Time Slot with ID {request.data.get('time_slot_id')} not found"},
             status=status.HTTP_404_NOT_FOUND
         )
     
     except Exception as e:
+        print(f"UNHANDLED EXCEPTION: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return Response(
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -249,7 +249,6 @@
             <th>Name</th>
             <th>Email</th>
             <th>Registered</th>
-            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -370,7 +369,6 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
                 <td>${user.name}</td>
                 <td>${user.email}</td>
                 <td>${date}</td>
-                <td>${user.is_admin ? '<span style="color:#60a5fa">Admin</span>' : '<span style="color:#94a3b8">User</span>'}</td>
                 <td>
                   <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">Delete</button>
                   <button class="view-more-btn" onclick="viewUserDetails(${user.id})">View More</button>

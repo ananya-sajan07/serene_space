@@ -25,25 +25,22 @@ class DoctorAdmin(admin.ModelAdmin):
 
 @admin.register(TimeSlot)
 class TimeSlotAdmin(admin.ModelAdmin):
-    list_display = ['doctor', 'date', 'get_start_time', 'get_end_time', 'is_booked', 'created_at']
-    list_filter = ['date', 'is_booked', 'doctor']
+    list_display = ['doctor', 'date', 'get_slot_count', 'created_at']
+    list_filter = ['date', 'doctor']
     search_fields = ['doctor__name']
     
-    def get_start_time(self, obj):
-        return obj.slot_data.get('start_time', 'N/A')
-    get_start_time.short_description = 'Start Time'
-    
-    def get_end_time(self, obj):
-        return obj.slot_data.get('end_time', 'N/A')
-    get_end_time.short_description = 'End Time'
+    def get_slot_count(self, obj):
+        slots = obj.slot_data.get('slots', [])
+        return len(slots)
+    get_slot_count.short_description = 'Number of Slots'
     
     # Customize form field for slot_data
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         field = super().formfield_for_dbfield(db_field, request, **kwargs)
         if db_field.name == 'slot_data':
-            field.help_text = 'Enter as JSON: {"start_time": "14.00", "end_time": "15.00"}'
+            field.help_text = 'Enter as JSON: {"slots": ["9.00", "10.00", "11.00"]}'
             field.widget = forms.Textarea(attrs={'rows': 3, 'cols': 50})
-        return field  
+        return field
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):

@@ -80,14 +80,25 @@ class BookSerializer(serializers.ModelSerializer):
 
 class TimeSlotSerializer(serializers.ModelSerializer):
     slots_list = serializers.SerializerMethodField(read_only=True)
+    booked_slots_count = serializers.SerializerMethodField(read_only=True)
+    available_slots = serializers.SerializerMethodField(read_only=True)
+    max_patients = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = TimeSlot
         fields = '__all__'
     
     def get_slots_list(self, obj):
-        # Return the slots array from slot_data
+        # Return all slots from slot_data
         return obj.slot_data.get('slots', [])
+    
+    def get_booked_slots_count(self, obj):
+        # Return dict of slot -> booking count
+        return obj.get_booked_slots()
+    
+    def get_available_slots(self, obj):
+        # Return list of slots with space available
+        return obj.get_available_slots()
 
 class MoodLogSerializer(serializers.ModelSerializer):
     class Meta:

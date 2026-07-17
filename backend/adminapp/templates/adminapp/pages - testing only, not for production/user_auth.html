@@ -314,7 +314,13 @@
           if (isSuccess) {
             const userName = data.name || data.username || email.split('@')[0];
             
-            showMessage(`✅ Login successful! Welcome ${userName}`, 'success');
+            // Check if this is actually a doctor trying to login
+            if (data.role === 'doctor') {
+              showMessage(` This is a doctor account. Please use the doctor login portal.`, 'error');
+              return;
+            }
+            
+            showMessage(` Login successful! Welcome ${userName}`, 'success');
             
             // Store basic user info
             const userId = data.user_id || data.id || '1';
