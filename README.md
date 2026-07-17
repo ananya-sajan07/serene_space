@@ -55,7 +55,7 @@
 
 ## Project Structure
 
-
+```
 backend/
 ├── adminapp/              # Admin panel & static pages
 │   ├── templates/         # HTML templates
@@ -75,7 +75,7 @@ backend/
 │   └── asgi.py           # WebSocket configuration
 ├── manage.py
 └── requirements.txt
-
+```
 
 ---
 
